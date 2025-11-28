@@ -4,6 +4,7 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
+    "build": "echo 'No build needed - Next.js transpiles this package'",
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
