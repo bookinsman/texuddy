@@ -542,7 +542,7 @@ export default function ParentDashboard() {
                             <div className="flex-1">
                               <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-200 mb-1">How to Set Reward Goals</h4>
                               <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                                Click "+ New Goal" to create a reward goal. Set at least one requirement (hours, words, or scenarios). 
+                                Click &quot;+ New Goal&quot; to create a reward goal. Set at least one requirement (hours, words, or scenarios). 
                                 The student will unlock the reward when they meet all requirements. You can edit or delete goals anytime.
                               </p>
                             </div>

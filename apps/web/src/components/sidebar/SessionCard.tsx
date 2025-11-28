@@ -27,7 +27,7 @@ export function SessionCard({ emailsToday, timeSpent, avgResponseTime, streakAct
   return (
     <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-4 border border-purple-200">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-gray-800">Today's Session</h3>
+        <h3 className="font-semibold text-gray-800">Today&apos;s Session</h3>
         {streakActive && <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full">🔥 Active</span>}
       </div>
 

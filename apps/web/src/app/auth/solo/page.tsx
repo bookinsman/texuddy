@@ -103,7 +103,7 @@ export default function SoloGrinderAuth() {
                 placeholder="9-18"
               />
               <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                We'll customize content based on your age
+                We&apos;ll customize content based on your age
               </p>
             </div>
 
@@ -131,7 +131,7 @@ export default function SoloGrinderAuth() {
                 ⚡ Solo Grinder Mode
               </p>
               <p className="text-xs text-orange-700 dark:text-orange-300 leading-relaxed">
-                Practice independently without parent setup. You'll have full access to all practice scenarios and can track your progress on the leaderboard!
+                Practice independently without parent setup. You&apos;ll have full access to all practice scenarios and can track your progress on the leaderboard!
               </p>
             </div>
           </div>

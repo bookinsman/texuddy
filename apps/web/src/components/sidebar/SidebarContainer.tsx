@@ -204,7 +204,7 @@ export function SidebarContainer({ user, totalCompleted, dailyStats, completedEm
 
         <div className="bg-white dark:bg-dark-50 rounded-lg p-4 border border-gray-200 dark:border-dark-100 shadow-sm">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">Today's Progress</h3>
+            <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">Today&apos;s Progress</h3>
             {user.currentStreak > 0 && (
               <span className="text-xs bg-gray-100 dark:bg-dark-100 text-gray-700 dark:text-gray-300 px-2 py-1 rounded font-medium">
                 🔥 {user.currentStreak} day streak

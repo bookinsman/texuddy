@@ -138,7 +138,7 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-xl text-gray-600 dark:text-gray-400 mb-10 leading-relaxed max-w-xl">
-                Practice real arguments, real negotiations, real confidence-builders. Type them once, own them forever. While your friends fumble for words, you'll already know what to say.
+                Practice real arguments, real negotiations, real confidence-builders. Type them once, own them forever. While your friends fumble for words, you&apos;ll already know what to say.
               </p>
 
               <div>
@@ -188,7 +188,7 @@ export default function LandingPage() {
                     <div className="space-y-3">
                       <div className="text-xs font-bold tracking-widest text-gray-400 dark:text-gray-500 uppercase">Incoming Challenge</div>
                       <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 dark:bg-white/5 dark:border-white/5 text-sm text-gray-600 dark:text-gray-300 leading-relaxed font-light">
-                        "We need to renegotiate the contract terms. The current pricing doesn't work for our budget anymore."
+                        &quot;We need to renegotiate the contract terms. The current pricing doesn&apos;t work for our budget anymore.&quot;
                       </div>
                     </div>
 
@@ -207,7 +207,7 @@ export default function LandingPage() {
                       </div>
                       <div className="relative p-4 rounded-xl bg-gradient-to-b from-green-50 to-transparent border border-green-100 dark:from-green-500/10 dark:to-transparent dark:border-green-500/20">
                         <p className="text-sm text-green-900 dark:text-green-50 font-medium leading-relaxed">
-                          "I understand budget constraints are a priority. Let's review the scope to find a solution that aligns with your targets while maintaining quality..."
+                          &quot;I understand budget constraints are a priority. Let&apos;s review the scope to find a solution that aligns with your targets while maintaining quality...&quot;
                           <span className="inline-block w-2 h-4 bg-green-500 ml-1 animate-pulse align-middle"></span>
                         </p>
                       </div>
@@ -237,7 +237,7 @@ export default function LandingPage() {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">Winning</span>
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              While you scroll, they're practicing scenario #47. You're falling behind.
+              While you scroll, they&apos;re practicing scenario #47. You&apos;re falling behind.
             </p>
           </div>
 
@@ -430,7 +430,7 @@ export default function LandingPage() {
               {
                 number: "01",
                 title: "They Can Hear You're Inexperienced",
-                desc: "That nervous pause. The 'umm...' before answering. Using 'like' every sentence. It screams amateur—and costs you respect, opportunities, money.",
+                desc: "That nervous pause. The &apos;umm...&apos; before answering. Using &apos;like&apos; every sentence. It screams amateur—and costs you respect, opportunities, money.",
                 color: "red",
                 gradient: "from-red-500 to-rose-600",
                 bgGradient: "from-red-50 to-rose-50 dark:from-red-950/20 dark:to-rose-950/20"
@@ -438,15 +438,15 @@ export default function LandingPage() {
               {
                 number: "02",
                 title: "You Always Lose Arguments (And You Know Why)",
-                desc: "Your parents shut you down. Teachers ignore your points. You KNOW you're right, but you can't articulate it. So you lose. Again.",
+                desc: "Your parents shut you down. Teachers ignore your points. You KNOW you&apos;re right, but you can&apos;t articulate it. So you lose. Again.",
                 color: "orange",
                 gradient: "from-orange-500 to-amber-600",
                 bgGradient: "from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20"
               },
               {
                 number: "03",
-                title: "The Difference? You've Already Said It Before",
-                desc: "Most people freeze because it's NEW. You won't—because you've already typed those exact words. Arguing with parents. Asking for extension. Defending your point in class. When the moment comes, you're just repeating.",
+                title: "The Difference? You&apos;ve Already Said It Before",
+                desc: "Most people freeze because it&apos;s NEW. You won&apos;t—because you&apos;ve already typed those exact words. Arguing with parents. Asking for extension. Defending your point in class. When the moment comes, you&apos;re just repeating.",
                 color: "purple",
                 gradient: "from-purple-500 to-violet-600",
                 bgGradient: "from-purple-50 to-violet-50 dark:from-purple-950/20 dark:to-violet-950/20"
@@ -541,11 +541,11 @@ export default function LandingPage() {
 
             <div className="reveal-on-scroll opacity-0 translate-y-10 transition-all duration-1000 order-1 lg:order-2">
               <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-                Reading Doesn't Work. <br/>
+                Reading Doesn&apos;t Work. <br/>
                 <span className="text-purple-400">Retyping Does.</span>
               </h2>
               <p className="text-xl text-gray-300 dark:text-gray-400 mb-8 leading-relaxed">
-                Reading about negotiation won't make you a negotiator. But retyping 50 expert negotiations? That <strong className="text-white">installs the pattern</strong> directly into your subconscious. Your fingers learn. Your brain absorbs. The words become yours.
+                Reading about negotiation won&apos;t make you a negotiator. But retyping 50 expert negotiations? That <strong className="text-white">installs the pattern</strong> directly into your subconscious. Your fingers learn. Your brain absorbs. The words become yours.
               </p>
               <ul className="space-y-4">
                 {[
@@ -640,7 +640,7 @@ export default function LandingPage() {
                 <span className="text-3xl font-black tracking-tight text-gray-900 dark:text-white">Texuddy</span>
               </div>
               <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md leading-relaxed text-lg">
-                Practice professional communication until it becomes instinct. Build the career advantage others can't copy.
+                Practice professional communication until it becomes instinct. Build the career advantage others can&apos;t copy.
               </p>
               <div className="flex gap-4">
                 {['Twitter', 'LinkedIn', 'Instagram'].map((platform) => (

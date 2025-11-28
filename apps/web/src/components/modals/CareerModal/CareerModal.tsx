@@ -41,7 +41,7 @@ export function CareerModal({ isOpen, onClose, totalEmailsCompleted }: CareerMod
                 <div>
                   <h3 className="font-semibold text-yellow-800">Limited Data</h3>
                   <p className="text-sm text-yellow-700 mt-1">
-                    You've only completed {totalEmailsCompleted} emails. For more accurate career insights,
+                    You&apos;ve only completed {totalEmailsCompleted} emails. For more accurate career insights,
                     we recommend completing at least 50 emails (currently {Math.round((totalEmailsCompleted / 50) * 100)}% there).
                   </p>
                 </div>

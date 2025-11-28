@@ -109,7 +109,7 @@ export function StatsContainer({ dailyStats }: StatsContainerProps) {
       {session && session.emailsCompleted > 0 && (
           <div className="bg-gray-50 dark:bg-dark-100/50 rounded-lg p-4 border border-gray-200 dark:border-dark-200 transition-colors duration-500">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-gray-800 dark:text-white">Today's Session</h3>
+              <h3 className="text-sm font-semibold text-gray-800 dark:text-white">Today&apos;s Session</h3>
             {session.streakActive && (
                 <span className="text-xs font-medium text-red-600 dark:text-red-400">🔥 Streak</span>
             )}

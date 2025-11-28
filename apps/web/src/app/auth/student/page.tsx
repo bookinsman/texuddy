@@ -104,10 +104,10 @@ export default function StudentAuth() {
           <div className="mt-6 pt-6 border-t border-gray-200 dark:border-[#3a3a3a]">
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
               <p className="text-sm text-blue-900 dark:text-blue-100 font-semibold mb-2">
-                Don't have a passcode?
+                Don&apos;t have a passcode?
               </p>
               <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
-                Ask your parent to create an account first. They'll receive a unique passcode to share with you!
+                Ask your parent to create an account first. They&apos;ll receive a unique passcode to share with you!
               </p>
             </div>
           </div>

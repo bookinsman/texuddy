@@ -147,7 +147,7 @@ export function StudentGoalsTab({ user, dailyStats, totalCompleted }: StudentGoa
           {iphoneGoal.unlocked && (
             <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
               <p className="text-sm text-green-800 dark:text-green-200 font-semibold text-center">
-                🎉 Congratulations! You've unlocked this reward! Your parent will be notified.
+                🎉 Congratulations! You&apos;ve unlocked this reward! Your parent will be notified.
               </p>
             </div>
           )}
