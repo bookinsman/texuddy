@@ -35,8 +35,8 @@ export default function SoloGrinderAuth() {
     localStorage.setItem('userAge', age);
 
     setTimeout(() => {
-      // Mock success - redirect to student dashboard
-      router.push('/student');
+      // Mock success - redirect to solo dashboard
+      router.push('/solo');
     }, 1000);
   };
 

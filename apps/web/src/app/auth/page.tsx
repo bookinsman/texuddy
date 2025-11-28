@@ -107,13 +107,13 @@ export default function AuthPage() {
           {/* Beta Test Button - Bypass Auth */}
           <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
             <Link
-              href="/student"
+              href="/solo"
               className="block w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] text-center"
             >
               🚀 Beta Test - Skip Login
             </Link>
             <p className="mt-2 text-xs text-center text-gray-500 dark:text-gray-500">
-              Quick access for testing
+              Quick access for testing (Solo Mode)
             </p>
           </div>
         </div>

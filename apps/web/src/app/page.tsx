@@ -109,7 +109,7 @@ export default function LandingPage() {
               <div className="flex items-center gap-3">
                 <ThemeToggle />
                 <Link
-                  href="/student"
+                  href="/solo"
                   className="px-5 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg font-semibold text-sm hover:bg-gray-800 dark:hover:bg-gray-100 transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 active:scale-95"
                 >
                   Start Free
