@@ -31,7 +31,7 @@ export default function SoloPage() {
     return [];
   });
   const [skippedEmails, setSkippedEmails] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState<'available' | 'skipped' | 'completed' | 'stats' | 'progress' | 'badges'>('available');
+  const [activeTab, setActiveTab] = useState<'available' | 'skipped' | 'completed' | 'stats' | 'progress' | 'badges' | 'leaderboard'>('available');
   const [dailyStats, setDailyStats] = useState<DailyStats[]>(() => {
     // Load from localStorage on initial render
     if (typeof window !== 'undefined') {
@@ -156,10 +156,10 @@ export default function SoloPage() {
     setActiveTab('stats');
   };
 
-  const handleTabChange = (tab: 'available' | 'skipped' | 'completed' | 'stats' | 'progress' | 'badges' | 'goals') => {
+  const handleTabChange = (tab: 'available' | 'skipped' | 'completed' | 'stats' | 'progress' | 'badges' | 'goals' | 'leaderboard') => {
     // Filter out 'goals' tab for solo grinder
     if (tab !== 'goals') {
-      setActiveTab(tab as 'available' | 'skipped' | 'completed' | 'stats' | 'progress' | 'badges');
+      setActiveTab(tab as 'available' | 'skipped' | 'completed' | 'stats' | 'progress' | 'badges' | 'leaderboard');
     }
   };
   

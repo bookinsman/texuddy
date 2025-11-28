@@ -31,7 +31,7 @@ export default function StudentPage() {
     return [];
   });
   const [skippedEmails, setSkippedEmails] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState<'available' | 'skipped' | 'completed' | 'stats' | 'progress' | 'badges' | 'goals'>('available');
+  const [activeTab, setActiveTab] = useState<'available' | 'skipped' | 'completed' | 'stats' | 'progress' | 'badges' | 'goals' | 'leaderboard'>('available');
   const [dailyStats, setDailyStats] = useState<DailyStats[]>(() => {
     // Load from localStorage on initial render
     if (typeof window !== 'undefined') {

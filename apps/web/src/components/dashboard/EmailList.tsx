@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card } from '@texuddy/ui';
-import { Button } from '@texuddy/ui';
 import type { Email } from '@texuddy/types';
 
 interface EmailListProps {
@@ -15,6 +14,36 @@ interface EmailListProps {
 export const EmailList: React.FC<EmailListProps> = ({ emails, onSelectEmail, onShowStats, onSkipEmail }) => {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [skippingId, setSkippingId] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (isMobile && scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const checkScroll = () => {
+        const hasScroll = container.scrollHeight > container.clientHeight;
+        const isScrolled = container.scrollTop < container.scrollHeight - container.clientHeight - 10;
+        setShowScrollButton(hasScroll && isScrolled);
+      };
+      checkScroll();
+      container.addEventListener('scroll', checkScroll);
+      return () => container.removeEventListener('scroll', checkScroll);
+    }
+  }, [isMobile, emails.length]);
+
+  const scrollDown = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ top: 300, behavior: 'smooth' });
+    }
+  };
 
   const truncateText = (text: string, maxLength: number = 60) => {
     if (text.length <= maxLength) return text;
@@ -60,8 +89,6 @@ export const EmailList: React.FC<EmailListProps> = ({ emails, onSelectEmail, onS
   const handleSkip = (e: React.MouseEvent, email: Email) => {
     e.stopPropagation();
     setSkippingId(email.id);
-
-    // Vanish animation then callback
     setTimeout(() => {
       if (onSkipEmail) {
         onSkipEmail(email);
@@ -79,7 +106,10 @@ export const EmailList: React.FC<EmailListProps> = ({ emails, onSelectEmail, onS
         </span>
       </div>
       <div className="relative">
-        <div className="max-h-[420px] lg:max-h-[560px] overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+        <div 
+          ref={scrollContainerRef}
+          className={`${isMobile ? 'space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto' : 'max-h-[420px] lg:max-h-[560px] overflow-y-auto pr-2 space-y-3 custom-scrollbar'}`}
+        >
           {emails.length === 0 ? (
             <Card padding="sm">
               <p className="text-gray-600 dark:text-gray-400 text-center py-6 text-sm">
@@ -87,73 +117,162 @@ export const EmailList: React.FC<EmailListProps> = ({ emails, onSelectEmail, onS
               </p>
             </Card>
           ) : (
-            emails.map((email, index) => (
-          <div
-            key={email.id}
-            className={`
-              relative bg-white dark:bg-dark-50 rounded-lg p-4 cursor-pointer
-              transition-all duration-200 ease-out
-              ${skippingId === email.id
-                ? 'opacity-0 scale-95'
-                : 'opacity-100 scale-100'
-              }
-              border border-gray-200 dark:border-dark-100
-              ${hoveredId === email.id ? 'shadow-md' : 'shadow-sm'}
-            `}
-            onMouseEnter={() => setHoveredId(email.id)}
-            onMouseLeave={() => setHoveredId(null)}
-            onClick={() => onSelectEmail(email)}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                {/* Title */}
-                <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-2">{email.subject}</h3>
-
-                {/* Problem description */}
-                <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
-                  {truncateText(email.body, 100)}
-                </p>
-
-                {/* Metadata footer with colored category */}
-                <div className="flex items-center gap-2 text-xs">
-                  <span className={`font-medium px-2 py-0.5 rounded ${getCategoryColor(email.category)}`}>
-                    {email.category}
-                  </span>
-                  <span className="text-gray-400">•</span>
-                  <span className="capitalize text-gray-500 dark:text-gray-400">{email.difficulty}</span>
-                  <span className="text-gray-400">•</span>
-                  <span className="text-gray-500 dark:text-gray-400">~{email.wordCount}w</span>
-                </div>
-              </div>
-
-              {/* Compact buttons - always visible on hover, no height change */}
-              <div
-                className={`
-                  flex-shrink-0 flex items-center gap-1.5 transition-opacity duration-200
-                  ${hoveredId === email.id ? 'opacity-100' : 'opacity-0 pointer-events-none'}
-                `}
-              >
-                <button
-                  onClick={(e) => handleSkip(e, email)}
-                  className="px-2.5 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >
-                  Skip
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSelectEmail(email);
-                  }}
-                  className="px-3 py-1 bg-black dark:bg-white text-white dark:text-black text-xs font-medium rounded transition-colors"
-                >
-                  Practice
-                </button>
-              </div>
-            </div>
-          </div>
-            ))
+            <>
+              {emails.map((email) => (
+                <EmailCard
+                  key={email.id}
+                  email={email}
+                  onSelectEmail={onSelectEmail}
+                  onSkipEmail={handleSkip}
+                  hoveredId={hoveredId}
+                  setHoveredId={setHoveredId}
+                  skippingId={skippingId}
+                  isMobile={isMobile}
+                  truncateText={truncateText}
+                  getCategoryColor={getCategoryColor}
+                />
+              ))}
+            </>
           )}
         </div>
+        {isMobile && showScrollButton && (
+          <button
+            onClick={scrollDown}
+            className="fixed bottom-20 right-4 z-50 bg-gray-900 dark:bg-white text-white dark:text-black rounded-full p-3 shadow-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-all animate-bounce"
+            aria-label="Scroll down"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+interface EmailCardProps {
+  email: Email;
+  onSelectEmail: (email: Email) => void;
+  onSkipEmail: (e: React.MouseEvent, email: Email) => void;
+  hoveredId: string | null;
+  setHoveredId: (id: string | null) => void;
+  skippingId: string | null;
+  isMobile: boolean;
+  truncateText: (text: string, maxLength?: number) => string;
+  getCategoryColor: (category: string) => string;
+}
+
+const EmailCard: React.FC<EmailCardProps> = ({
+  email,
+  onSelectEmail,
+  onSkipEmail,
+  hoveredId,
+  setHoveredId,
+  skippingId,
+  isMobile,
+  truncateText,
+  getCategoryColor
+}) => {
+  const [clickedId, setClickedId] = useState<string | null>(null);
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (isMobile) {
+      e.stopPropagation();
+      if (clickedId === email.id) {
+        // Second click - open email
+        onSelectEmail(email);
+        setClickedId(null);
+      } else {
+        // First click - show buttons
+        setClickedId(email.id);
+      }
+    } else {
+      onSelectEmail(email);
+    }
+  };
+
+  const showButtons = isMobile ? clickedId === email.id : hoveredId === email.id;
+
+  return (
+    <div
+      className={`
+        relative bg-white dark:bg-dark-50 rounded-lg ${isMobile ? 'p-3' : 'p-4'} cursor-pointer
+        transition-all duration-200 ease-out
+        ${skippingId === email.id
+          ? 'opacity-0 scale-95'
+          : 'opacity-100 scale-100'
+        }
+        border border-gray-200 dark:border-dark-100
+        ${showButtons ? 'shadow-md' : 'shadow-sm'}
+        ${isMobile ? 'w-full' : ''}
+      `}
+      onMouseEnter={() => !isMobile && setHoveredId(email.id)}
+      onMouseLeave={() => !isMobile && setHoveredId(null)}
+      onClick={handleCardClick}
+    >
+      <div className={`flex items-start justify-between ${isMobile ? 'flex-col gap-2' : 'gap-3'}`}>
+        <div className={`${isMobile ? 'w-full' : 'flex-1 min-w-0'}`}>
+          <h3 className={`font-semibold text-gray-900 dark:text-white ${isMobile ? 'text-sm' : 'text-sm'} mb-2`}>{email.subject}</h3>
+          <p className={`text-xs text-gray-600 dark:text-gray-400 ${isMobile ? 'line-clamp-3' : 'line-clamp-2'} mb-2`}>
+            {isMobile ? email.body : truncateText(email.body, 100)}
+          </p>
+          <div className={`flex items-center gap-2 text-xs ${isMobile ? 'flex-wrap' : ''}`}>
+            <span className={`font-medium px-2 py-0.5 rounded ${getCategoryColor(email.category)}`}>
+              {email.category}
+            </span>
+            <span className="text-gray-400">•</span>
+            <span className="capitalize text-gray-500 dark:text-gray-400">{email.difficulty}</span>
+            <span className="text-gray-400">•</span>
+            <span className="text-gray-500 dark:text-gray-400">~{email.wordCount}w</span>
+          </div>
+        </div>
+
+        {/* Buttons - Show on hover (desktop) or click (mobile) */}
+        {isMobile ? (
+          showButtons && (
+            <div className="flex-shrink-0 flex items-center gap-2 w-full pt-2 border-t border-gray-200 dark:border-dark-100">
+              <button
+                onClick={(e) => onSkipEmail(e, email)}
+                className="flex-1 px-3 py-2 text-xs text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-gray-600 rounded transition-colors"
+              >
+                Skip
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectEmail(email);
+                }}
+                className="flex-1 px-3 py-2 bg-black dark:bg-white text-white dark:text-black text-xs font-medium rounded transition-colors"
+              >
+                Practice
+              </button>
+            </div>
+          )
+        ) : (
+          <div
+            className={`
+              flex-shrink-0 flex items-center gap-1.5 transition-opacity duration-200
+              ${showButtons ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+            `}
+          >
+            <button
+              onClick={(e) => onSkipEmail(e, email)}
+              className="px-2.5 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              Skip
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelectEmail(email);
+              }}
+              className="px-3 py-1 bg-black dark:bg-white text-white dark:text-black text-xs font-medium rounded transition-colors"
+            >
+              Practice
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

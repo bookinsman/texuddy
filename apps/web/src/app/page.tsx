@@ -5,6 +5,93 @@ import Link from 'next/link';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { PricingSection } from '@/components/pricing/PricingSection';
 
+// Animated Stat Card Component
+function AnimatedStatCard({ label, targetValue, sublabel, dotColor, className = '', incrementBy = 1 }: { label: string; targetValue: number; sublabel: string; dotColor: string; className?: string; incrementBy?: number }) {
+  // Start with a percentage of target value to show data immediately
+  const initialValue = Math.floor(targetValue * 0.7);
+  const [displayValue, setDisplayValue] = useState(initialValue);
+  const [hasAnimated, setHasAnimated] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (!cardRef.current || hasAnimated) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasAnimated) {
+            setHasAnimated(true);
+            let current = initialValue;
+            const remaining = targetValue - initialValue;
+            const duration = 2000; // 2 seconds
+            const steps = 100;
+            const increment = remaining / steps;
+            const stepDuration = duration / steps;
+
+            intervalRef.current = setInterval(() => {
+              current += increment;
+              if (current >= targetValue) {
+                setDisplayValue(targetValue);
+                if (intervalRef.current) {
+                  clearInterval(intervalRef.current);
+                  intervalRef.current = null;
+                }
+              } else {
+                setDisplayValue(Math.floor(current));
+              }
+            }, stepDuration);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(cardRef.current);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      observer.disconnect();
+    };
+  }, [targetValue, hasAnimated, label, initialValue]);
+
+  // For active operatives and words internalized, continuously animate up/down
+  useEffect(() => {
+    if ((label === "ACTIVE OPERATIVES" || label === "WORDS INTERNALIZED") && hasAnimated) {
+      const variationInterval = setInterval(() => {
+        setDisplayValue(prev => {
+          const change = Math.random() > 0.5 ? incrementBy : -incrementBy;
+          const newValue = prev + change;
+          // Keep within reasonable range (targetValue ± 5% for words, ±20 for operatives)
+          const range = label === "WORDS INTERNALIZED" ? Math.floor(targetValue * 0.05) : 20;
+          return Math.max(targetValue - range, Math.min(targetValue + range, newValue));
+        });
+      }, 2000); // Change every 2 seconds
+
+      return () => clearInterval(variationInterval);
+    }
+  }, [label, hasAnimated, targetValue, incrementBy]);
+
+  return (
+    <div ref={cardRef} className={`bg-white dark:bg-[#1a1a1a] rounded-xl p-5 md:p-6 border border-gray-200 dark:border-gray-800 transition-all hover:shadow-lg ${className}`}>
+      <div className="flex items-center gap-2 mb-3">
+        <div className={`w-1.5 h-1.5 rounded-full ${dotColor}`}></div>
+        <div className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          {label}
+        </div>
+      </div>
+      <div className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-1 tracking-tight">
+        {displayValue.toLocaleString()}
+      </div>
+      <div className="text-sm text-gray-500 dark:text-gray-400">
+        {sublabel}
+      </div>
+    </div>
+  );
+}
+
 export default function LandingPage() {
   const [scrollY, setScrollY] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -46,6 +133,35 @@ export default function LandingPage() {
     };
   }, []);
 
+  const leaderboardStats = [
+    { label: 'Active Operatives', value: '156', helper: 'students learning', accent: 'from-purple-500/10 to-purple-500/5' },
+    { label: 'Words Internalized', value: '12,847', helper: 'total retyped', accent: 'from-blue-500/10 to-blue-500/5' },
+    { label: 'Scenarios Complete', value: '847', helper: 'finished today', accent: 'from-amber-500/10 to-amber-500/5' },
+  ];
+
+  const leaderboardPlayers = [
+    { rank: 1, name: 'Lukas M.', tag: '@PSYCH_MASTER', track: 'Negotiating Salary Raises', country: 'LT', wpm: 142, xp: '12.5k' },
+    { rank: 2, name: 'Emilija K.', tag: '@MKT_NINJA', track: 'Pitching Business Ideas', country: 'LT', wpm: 138, xp: '10.2k' },
+    { rank: 3, name: 'Jonas P.', tag: '@FINANCE_PRO', track: 'Client Contract Reviews', country: 'LT', wpm: 131, xp: '9.8k' },
+    { rank: 4, name: 'Gabija L.', tag: '@DESIGN_FLOW', track: 'Creative Project Briefs', country: 'LT', wpm: 128, xp: '8.9k' },
+    { rank: 5, name: 'Tomas S.', tag: '@ENGINEER_LT', track: 'Technical Documentation', country: 'LT', wpm: 124, xp: '8.1k' },
+    { rank: 6, name: 'Ieva M.', tag: '@MED_STUDENT', track: 'Patient Communication', country: 'LT', wpm: 120, xp: '7.8k' },
+    { rank: 7, name: 'Karolis V.', tag: '@LAW_KEEPER', track: 'Legal Case Arguments', country: 'LT', wpm: 118, xp: '7.2k' },
+    { rank: 8, name: 'Urte K.', tag: '@BIZ_LEADER', track: 'Team Leadership Memos', country: 'LT', wpm: 115, xp: '6.9k' },
+    { rank: 9, name: 'Mantas D.', tag: '@CODE_MASTER', track: 'Code Review Feedback', country: 'LT', wpm: 112, xp: '6.5k' },
+    { rank: 10, name: 'Rugile B.', tag: '@ARCH_DESIGN', track: 'Architecture Proposals', country: 'LT', wpm: 110, xp: '6.1k' },
+    { rank: 11, name: 'Dovydas R.', tag: '@TEACHER_LT', track: 'Student Progress Reports', country: 'LT', wpm: 108, xp: '5.8k' },
+    { rank: 12, name: 'Greta P.', tag: '@NURSE_CARE', track: 'Healthcare Protocols', country: 'LT', wpm: 105, xp: '5.4k' },
+    { rank: 13, name: 'Justinas A.', tag: '@ACCOUNT_PRO', track: 'Financial Audit Reports', country: 'LT', wpm: 102, xp: '5.1k' },
+    { rank: 14, name: 'Monika Z.', tag: '@HR_EXPERT', track: 'Performance Reviews', country: 'LT', wpm: 100, xp: '4.8k' },
+    { rank: 15, name: 'Darius N.', tag: '@SALES_KING', track: 'Cold Outreach Emails', country: 'LT', wpm: 98, xp: '4.5k' },
+    { rank: 16, name: 'Laura G.', tag: '@JOURNALIST', track: 'Interview Questions', country: 'LT', wpm: 95, xp: '4.2k' },
+    { rank: 17, name: 'Rokas J.', tag: '@PHOTO_ART', track: 'Creative Pitches', country: 'LT', wpm: 92, xp: '3.9k' },
+    { rank: 18, name: 'Agne T.', tag: '@CHEF_LT', track: 'Menu Descriptions', country: 'LT', wpm: 90, xp: '3.6k' },
+    { rank: 19, name: 'Paulius F.', tag: '@SPORT_PRO', track: 'Training Programs', country: 'LT', wpm: 88, xp: '3.3k' },
+    { rank: 20, name: 'Your Teen', tag: '@JOIN_NOW', track: 'Start Your Journey', country: 'LT', wpm: 0, xp: '0', highlight: true },
+  ];
+
   return (
     <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white selection:bg-purple-500 selection:text-white overflow-x-hidden font-sans transition-colors duration-500">
       {/* Dynamic Background - Light vs Dark Split */}
@@ -83,8 +199,8 @@ export default function LandingPage() {
               {/* Logo - Minimalist */}
               <Link href="/" className="flex items-center gap-3 group">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl blur-md opacity-60 group-hover:opacity-80 transition-opacity"></div>
-                  <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center font-bold text-white text-lg shadow-lg group-hover:scale-110 transition-transform duration-200">
+                  <div className="absolute inset-0 bg-gray-900 dark:bg-white rounded-xl blur-md opacity-70 group-hover:opacity-90 transition-opacity"></div>
+                  <div className="relative w-10 h-10 rounded-xl bg-gray-900 dark:bg-white flex items-center justify-center font-bold text-white dark:text-gray-900 text-lg shadow-lg group-hover:scale-110 transition-transform duration-200">
                     T
                   </div>
                 </div>
@@ -214,190 +330,133 @@ export default function LandingPage() {
                     </div>
                   </div>
                 </div>
+                {true && (
+                  <div className="md:hidden px-4 py-2 text-center text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-[#333]">
+                    Scroll to see the full leaderboard
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Live Leaderboard Section - CALM & PLEASANT */}
-      <section className="relative py-20 md:py-32 bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-black overflow-hidden">
-        {/* Soft pleasant background */}
-        <div className="absolute inset-0 overflow-hidden">
-          {/* Gentle gradient orbs */}
-          <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-purple-100/30 dark:bg-purple-500/5 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/3 right-1/4 w-[500px] h-[500px] bg-blue-100/30 dark:bg-blue-500/5 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-6">
+      {/* Live Leaderboard Section - PREMIUM DESIGN */}
+      <section className="relative py-20 md:py-32 bg-white dark:bg-black overflow-hidden">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="text-center mb-16 reveal-on-scroll opacity-0 translate-y-10 transition-all duration-1000">
-            <h2 className="text-5xl md:text-6xl font-bold mb-4 text-gray-900 dark:text-gray-100 leading-tight tracking-tight">
+          <div className="text-center mb-12 md:mb-16 reveal-on-scroll opacity-0 translate-y-10 transition-all duration-1000">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-gray-900 dark:text-white leading-tight tracking-tight">
               Right Now, Someone Your Age Is<br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">Winning</span>
             </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            <p className="text-base md:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               While you scroll, they&apos;re practicing scenario #47. You&apos;re falling behind.
             </p>
           </div>
 
-          {/* Leaderboard Container */}
-          <div className="grid lg:grid-cols-12 gap-4 md:gap-6 mb-20">
-            {/* Left - Stats Cards (Monkeytype style) */}
-            <div className="lg:col-span-4 space-y-3 md:space-y-4 reveal-on-scroll opacity-0 translate-x-10 transition-all duration-1000">
-              {[
-                { label: "ACTIVE OPERATIVES", number: "156", sublabel: "students learning" },
-                { label: "WORDS INTERNALIZED", number: "12,847", sublabel: "total retyped" },
-                { label: "SCENARIOS COMPLETE", number: "847", sublabel: "finished today" }
-              ].map((stat, i) => (
-                <div key={i} className="bg-white dark:bg-[#2a2a2a] rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200 dark:border-[#3a3a3a] hover:border-gray-300 dark:hover:border-[#4a4a4a] transition-all">
-                  <div className="flex items-center gap-2 mb-2 md:mb-3">
-                    <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-gray-400 dark:bg-gray-600"></div>
-                    <div className="text-[10px] md:text-xs font-bold text-gray-500 dark:text-gray-500 uppercase tracking-widest">
-                      {stat.label}
-                    </div>
-                  </div>
-                  <div className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-1 tracking-tight">
-                    {stat.number.toLocaleString()}
-                  </div>
-                  <div className="text-xs md:text-sm text-gray-500 dark:text-gray-500">
-                    {stat.sublabel}
-                  </div>
+          {/* Stats Cards - Stacked Vertically */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-8 md:mb-12 reveal-on-scroll opacity-0 translate-y-10 transition-all duration-1000">
+            <AnimatedStatCard label="WORDS INTERNALIZED" targetValue={30230} sublabel="words" dotColor="bg-gray-400" className="lg:col-span-4" />
+            <AnimatedStatCard label="ACTIVE OPERATIVES" targetValue={320} sublabel="operatives" dotColor="bg-gray-400" className="lg:col-span-4" incrementBy={5} />
+            <AnimatedStatCard label="GLOBAL VELOCITY" targetValue={98} sublabel="WPM" dotColor="bg-green-500" className="lg:col-span-4" />
+          </div>
+
+          {/* Premium Leaderboard Table - Horizontal Scroll */}
+          <div className="reveal-on-scroll opacity-0 translate-y-10 transition-all duration-1000 delay-200">
+            <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-xl">
+              {/* Table Header */}
+              <div className="px-4 md:px-6 py-2 md:py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#0f0f0f] overflow-x-auto">
+                <div className="min-w-[700px] md:min-w-0 grid grid-cols-5 gap-3 md:gap-6 items-center">
+                  <div className="text-[10px] md:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">POS</div>
+                  <div className="text-[10px] md:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">OPERATIVE</div>
+                  <div className="text-right text-[10px] md:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">FLOW</div>
+                  <div className="text-right text-[10px] md:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">WORDS</div>
+                  <div className="text-right text-[10px] md:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">SCENARIOS</div>
                 </div>
-              ))}
-            </div>
+              </div>
 
-            {/* Right - Clean Leaderboard Table */}
-            <div className="lg:col-span-8 reveal-on-scroll opacity-0 translate-x-10 transition-all duration-1000 delay-200">
-              <div className="bg-white dark:bg-[#2a2a2a] rounded-xl md:rounded-2xl border border-gray-200 dark:border-[#3a3a3a] overflow-hidden">
-                {/* Header */}
-                <div className="px-4 md:px-6 py-3 md:py-4 border-b border-gray-200 dark:border-[#3a3a3a] bg-gray-50 dark:bg-[#252525]">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 md:gap-3">
-                      <div className="text-base md:text-xl font-bold text-gray-900 dark:text-gray-100">Top Learners</div>
-                      <span className="px-2 md:px-3 py-0.5 md:py-1 rounded-full bg-green-500 text-white text-[10px] md:text-xs font-bold">LIVE</span>
-                    </div>
-                    <div className="hidden md:block text-sm text-gray-500 dark:text-gray-500 font-mono">GLOBAL RANKINGS</div>
-                  </div>
-                </div>
-
-                {/* Table Header - MOBILE RESPONSIVE */}
-                <div className="hidden md:block px-6 py-3 bg-gray-50 dark:bg-[#252525] border-b border-gray-200 dark:border-[#3a3a3a]">
-                  <div className="grid grid-cols-12 gap-4 text-xs font-bold text-gray-500 dark:text-gray-500 uppercase tracking-wider">
-                    <div className="col-span-1">POS</div>
-                    <div className="col-span-5">OPERATIVE</div>
-                    <div className="col-span-3 text-right">FLOW</div>
-                    <div className="col-span-3 text-right">TOTAL XP</div>
-                  </div>
-                </div>
-
-                {/* Scrollable List - MOBILE OPTIMIZED */}
-                <div className="h-[400px] md:h-[500px] overflow-y-auto custom-scrollbar">
-                  {[
-                    { name: "Lukas M.", username: "@PSYCH_MASTER", country: "LT", wpm: "142", xp: "12.5k", category: "Negotiating Salary Raises", color: "blue" },
-                    { name: "Emilija K.", username: "@MKT_NINJA", country: "LT", wpm: "138", xp: "10.2k", category: "Pitching Business Ideas", color: "purple" },
-                    { name: "Jonas P.", username: "@FINANCE_PRO", country: "LT", wpm: "131", xp: "9.8k", category: "Client Contract Reviews", color: "green" },
-                    { name: "Gabija L.", username: "@DESIGN_FLOW", country: "LT", wpm: "128", xp: "8.9k", category: "Creative Project Briefs", color: "pink" },
-                    { name: "Tomas S.", username: "@ENGINEER_LT", country: "LT", wpm: "124", xp: "8.1k", category: "Technical Documentation", color: "indigo" },
-                    { name: "Ieva M.", username: "@MED_STUDENT", country: "LT", wpm: "120", xp: "7.8k", category: "Patient Communication", color: "red" },
-                    { name: "Karolis V.", username: "@LAW_KEEPER", country: "LT", wpm: "118", xp: "7.2k", category: "Legal Case Arguments", color: "amber" },
-                    { name: "Urte K.", username: "@BIZ_LEADER", country: "LT", wpm: "115", xp: "6.9k", category: "Team Leadership Memos", color: "cyan" },
-                    { name: "Mantas D.", username: "@CODE_MASTER", country: "LT", wpm: "112", xp: "6.5k", category: "Code Review Feedback", color: "violet" },
-                    { name: "Rugile B.", username: "@ARCH_DESIGN", country: "LT", wpm: "110", xp: "6.1k", category: "Architecture Proposals", color: "orange" },
-                    { name: "Dovydas R.", username: "@TEACHER_LT", country: "LT", wpm: "108", xp: "5.8k", category: "Student Progress Reports", color: "teal" },
-                    { name: "Greta P.", username: "@NURSE_CARE", country: "LT", wpm: "105", xp: "5.4k", category: "Healthcare Protocols", color: "rose" },
-                    { name: "Justinas A.", username: "@ACCOUNT_PRO", country: "LT", wpm: "102", xp: "5.1k", category: "Financial Audit Reports", color: "emerald" },
-                    { name: "Monika Z.", username: "@HR_EXPERT", country: "LT", wpm: "100", xp: "4.8k", category: "Performance Reviews", color: "fuchsia" },
-                    { name: "Darius N.", username: "@SALES_KING", country: "LT", wpm: "98", xp: "4.5k", category: "Cold Outreach Emails", color: "lime" },
-                    { name: "Laura G.", username: "@JOURNALIST", country: "LT", wpm: "95", xp: "4.2k", category: "Interview Questions", color: "sky" },
-                    { name: "Rokas J.", username: "@PHOTO_ART", country: "LT", wpm: "92", xp: "3.9k", category: "Creative Pitches", color: "purple" },
-                    { name: "Agne T.", username: "@CHEF_LT", country: "LT", wpm: "90", xp: "3.6k", category: "Menu Descriptions", color: "amber" },
-                    { name: "Paulius F.", username: "@SPORT_PRO", country: "LT", wpm: "88", xp: "3.3k", category: "Training Programs", color: "blue" },
-                    { name: "Your Teen", username: "@JOIN_NOW", country: "LT", wpm: "0", xp: "0", category: "Start Your Journey", color: "gray", highlight: true }
-                  ].map((player, i) => (
-                    <div
-                      key={i}
-                      className={`px-4 md:px-6 py-3 md:py-4 border-b border-gray-100 dark:border-[#3a3a3a] hover:bg-gray-50 dark:hover:bg-[#333] transition-colors ${
-                        player.highlight ? 'bg-purple-50 dark:bg-purple-950/20' : ''
-                      }`}
-                    >
-                      {/* DESKTOP LAYOUT */}
-                      <div className="hidden md:grid grid-cols-12 gap-4 items-center">
-                        {/* Position */}
-                        <div className="col-span-1">
-                          <div className={`inline-flex items-center justify-center w-8 h-8 rounded-lg font-bold text-sm ${
-                            i === 0 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                            i === 1 ? 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300' :
-                            i === 2 ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                            'text-gray-500 dark:text-gray-500'
-                          }`}>
-                            {player.highlight ? '?' : `${i + 1}`.padStart(2, '0')}
-                          </div>
-                        </div>
-
-                        {/* Name & Category */}
-                        <div className="col-span-5">
-                          <div className="font-bold text-gray-900 dark:text-gray-100">{player.name}</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-500 font-mono mb-1">
-                            {player.username} • {player.country}
-                          </div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400 italic">
-                            Currently: {player.category}
-                          </div>
-                        </div>
-
-                        {/* WPM */}
-                        <div className="col-span-3 text-right">
-                          <div className="text-xs text-gray-500 dark:text-gray-500 mb-1">FLOW</div>
-                          <div className="text-lg font-bold text-gray-900 dark:text-gray-100">{player.wpm} WPM</div>
-                        </div>
-
-                        {/* XP */}
-                        <div className="col-span-3 text-right">
-                          <div className="text-xs text-gray-500 dark:text-gray-500 mb-1">TOTAL XP</div>
-                          <div className="text-lg font-bold text-gray-900 dark:text-gray-100">{player.xp}</div>
-                        </div>
-                      </div>
-
-                      {/* MOBILE LAYOUT */}
-                      <div className="md:hidden flex items-start gap-3">
-                        {/* Position Badge */}
-                        <div className={`flex-shrink-0 w-12 h-12 rounded-lg font-bold text-base flex items-center justify-center ${
-                          i === 0 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                          i === 1 ? 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300' :
-                          i === 2 ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                          player.highlight ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
-                          'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+              {/* Leaderboard Rows - Top 5 Only */}
+              <div className="divide-y divide-gray-100 dark:divide-gray-800 overflow-x-auto">
+                {[
+                  { name: "Alex V.", username: "@STOIC_DEV", country: "US", wpm: "142", words: "12,450", scenarios: "20", initial: "A", rank: 1 },
+                  { name: "Sarah J.", username: "@NEURAL_NET", country: "GB", wpm: "138", words: "8,920", scenarios: "177", initial: "S", rank: 2 },
+                  { name: "Davide R.", username: "@ROME_BUILT", country: "IT", wpm: "131", words: "15,330", scenarios: "140", initial: "D", rank: 3 },
+                  { name: "Kenji M.", username: "@KAIZEN_FLOW", country: "JP", wpm: "128", words: "9,177", scenarios: "33", initial: "K", rank: 4 },
+                  { name: "Elena B.", username: "@LOGOS_ONE", country: "DE", wpm: "124", words: "7,820", scenarios: "333", initial: "E", rank: 5 }
+                ].map((player) => (
+                  <div
+                    key={player.rank}
+                    className="px-4 md:px-6 py-3 md:py-4 hover:bg-gray-50 dark:hover:bg-[#252525] transition-colors min-w-[700px] md:min-w-0"
+                  >
+                    <div className="grid grid-cols-5 gap-3 md:gap-6 items-center">
+                      {/* Position */}
+                      <div>
+                        <div className={`text-xs md:text-sm font-bold ${
+                          player.rank === 1 ? 'text-yellow-600 dark:text-yellow-400' :
+                          player.rank === 2 ? 'text-gray-600 dark:text-gray-400' :
+                          player.rank === 3 ? 'text-orange-600 dark:text-orange-400' :
+                          'text-gray-500 dark:text-gray-500'
                         }`}>
-                          {player.highlight ? '?' : i + 1}
-                        </div>
-
-                        {/* Info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="font-bold text-sm text-gray-900 dark:text-gray-100 mb-1 leading-tight">{player.name}</div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400 italic mb-2 leading-tight">
-                            {player.category}
-                          </div>
-                          <div className="flex items-center gap-3 text-xs">
-                            <div className="flex items-center gap-1">
-                              <span className="text-gray-500 dark:text-gray-500 text-[10px]">WPM:</span>
-                              <span className="font-bold text-gray-900 dark:text-gray-100">{player.wpm}</span>
-                            </div>
-                            <span className="text-gray-300 dark:text-gray-600">•</span>
-                            <div className="flex items-center gap-1">
-                              <span className="text-gray-500 dark:text-gray-500 text-[10px]">XP:</span>
-                              <span className="font-bold text-gray-900 dark:text-gray-100">{player.xp}</span>
-                            </div>
-                          </div>
+                          {String(player.rank).padStart(2, '0')}
                         </div>
                       </div>
+
+                      {/* Operative */}
+                      <div className="flex items-center gap-2 md:gap-3 min-w-0">
+                        {/* Avatar */}
+                        <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-white font-bold text-xs md:text-sm flex-shrink-0 ${
+                          player.rank === 1 ? 'bg-yellow-500' :
+                          player.rank === 2 ? 'bg-gray-400' :
+                          player.rank === 3 ? 'bg-orange-500' :
+                          'bg-gray-300 dark:bg-gray-700'
+                        }`}>
+                          {player.initial}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1 md:gap-2">
+                            <div className="font-bold text-xs md:text-base text-gray-900 dark:text-white truncate">{player.name}</div>
+                            {player.rank === 1 && (
+                              <span className="text-yellow-500 text-[10px] md:text-base">🏆</span>
+                            )}
+                          </div>
+                          <div className="text-[9px] md:text-xs text-gray-500 dark:text-gray-400 font-mono mt-0.5 truncate">{player.username} • {player.country}</div>
+                        </div>
+                      </div>
+
+                      {/* Flow */}
+                      <div className="text-right">
+                        <div className="text-[9px] md:text-xs text-gray-500 dark:text-gray-400 mb-0.5 md:mb-1">FLOW</div>
+                        <div className="text-xs md:text-base font-bold text-gray-900 dark:text-white">{player.wpm} WPM</div>
+                      </div>
+
+                      {/* Words Rewritten */}
+                      <div className="text-right">
+                        <div className="text-[9px] md:text-xs text-gray-500 dark:text-gray-400 mb-0.5 md:mb-1">WORDS</div>
+                        <div className="text-xs md:text-base font-bold text-gray-900 dark:text-white">{player.words}</div>
+                      </div>
+
+                      {/* Scenarios Finished */}
+                      <div className="text-right">
+                        <div className="text-[9px] md:text-xs text-gray-500 dark:text-gray-400 mb-0.5 md:mb-1">SCENARIOS</div>
+                        <div className="text-xs md:text-base font-bold text-gray-900 dark:text-white">{player.scenarios}</div>
+                      </div>
                     </div>
-                  ))}
+                  </div>
+                ))}
+              </div>
+
+              {/* Footer */}
+              <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#0f0f0f] text-center">
+                <div className="flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  <span className="uppercase tracking-wider">VIEW FULL GLOBAL RANKINGS</span>
                 </div>
               </div>
             </div>
           </div>
-
         </div>
       </section>
 
@@ -430,7 +489,7 @@ export default function LandingPage() {
               {
                 number: "01",
                 title: "They Can Hear You're Inexperienced",
-                desc: "That nervous pause. The &apos;umm...&apos; before answering. Using &apos;like&apos; every sentence. It screams amateur—and costs you respect, opportunities, money.",
+                desc: "That nervous pause. The 'umm...' before answering. Using 'like' every sentence. It screams amateur—and costs you respect, opportunities, money.",
                 color: "red",
                 gradient: "from-red-500 to-rose-600",
                 bgGradient: "from-red-50 to-rose-50 dark:from-red-950/20 dark:to-rose-950/20"
@@ -438,15 +497,15 @@ export default function LandingPage() {
               {
                 number: "02",
                 title: "You Always Lose Arguments (And You Know Why)",
-                desc: "Your parents shut you down. Teachers ignore your points. You KNOW you&apos;re right, but you can&apos;t articulate it. So you lose. Again.",
+                desc: "Your parents shut you down. Teachers ignore your points. You KNOW you're right, but you can't articulate it. So you lose. Again.",
                 color: "orange",
                 gradient: "from-orange-500 to-amber-600",
                 bgGradient: "from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20"
               },
               {
                 number: "03",
-                title: "The Difference? You&apos;ve Already Said It Before",
-                desc: "Most people freeze because it&apos;s NEW. You won&apos;t—because you&apos;ve already typed those exact words. Arguing with parents. Asking for extension. Defending your point in class. When the moment comes, you&apos;re just repeating.",
+                title: "The Difference? You've Already Said It Before",
+                desc: "Most people freeze because it's NEW. You won't—because you've already typed those exact words. Arguing with parents. Asking for extension. Defending your point in class. When the moment comes, you're just repeating.",
                 color: "purple",
                 gradient: "from-purple-500 to-violet-600",
                 bgGradient: "from-purple-50 to-violet-50 dark:from-purple-950/20 dark:to-violet-950/20"
@@ -632,8 +691,8 @@ export default function LandingPage() {
             <div className="md:col-span-2">
               <div className="flex items-center gap-3 mb-6">
                 <div className="relative group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl blur-md opacity-60 group-hover:opacity-80 transition-opacity"></div>
-                  <div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center font-black text-white text-xl shadow-xl group-hover:scale-110 transition-transform duration-200">
+                  <div className="absolute inset-0 bg-gray-900 dark:bg-white rounded-xl blur-md opacity-60 group-hover:opacity-80 transition-opacity"></div>
+                  <div className="relative w-12 h-12 rounded-xl bg-gray-900 dark:bg-white flex items-center justify-center font-black text-white dark:text-gray-900 text-xl shadow-xl group-hover:scale-110 transition-transform duration-200">
                     T
                   </div>
                 </div>

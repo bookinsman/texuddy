@@ -36,16 +36,50 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
   const [currentIndex, setCurrentIndex] = useState(() => getInitialIndex(response));
   const [startTime, setStartTime] = useState<number | null>(null);
   const [fontSize, setFontSize] = useState(22);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const activeCharRef = useRef<HTMLSpanElement>(null);
   const wordCount = response.split(/\s+/).length;
 
   useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile) setKeyboardHeight(0);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (!isMobile) return;
+    
+    const handleResize = () => {
+      const viewportHeight = window.visualViewport?.height || window.innerHeight;
+      const windowHeight = window.innerHeight;
+      const heightDiff = windowHeight - viewportHeight;
+      setKeyboardHeight(Math.max(0, heightDiff));
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+      handleResize();
+      return () => window.visualViewport?.removeEventListener('resize', handleResize);
+    } else {
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, [isMobile]);
+
+  useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
   // Smart scroll logic - keeps cursor in view (30% from top, 40% near end)
+  // On mobile, accounts for keyboard height
   useEffect(() => {
     if (activeCharRef.current && containerRef.current) {
       const container = containerRef.current;
@@ -53,7 +87,12 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
       
       const containerRect = container.getBoundingClientRect();
       const elementRect = element.getBoundingClientRect();
-      const containerHeight = containerRect.height;
+      let containerHeight = containerRect.height;
+      
+      // On mobile, adjust for keyboard
+      if (isMobile && keyboardHeight > 0) {
+        containerHeight = containerHeight - keyboardHeight;
+      }
       
       // Check if we're near the end of the text
       const isNearEnd = currentIndex >= response.length * 0.85;
@@ -68,8 +107,9 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
         const maxScroll = container.scrollHeight - containerHeight;
         targetScroll = Math.min(targetScroll, maxScroll);
       } else {
-        // Normal position: 30% from the top
-        targetScroll = relativeTop - (containerHeight * 0.30) + (elementRect.height / 2);
+        // Normal position: 30% from the top, but on mobile with keyboard, use less space
+        const topOffset = isMobile && keyboardHeight > 0 ? 0.20 : 0.30;
+        targetScroll = relativeTop - (containerHeight * topOffset) + (elementRect.height / 2);
       }
       
       container.scrollTo({
@@ -77,7 +117,7 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
         behavior: 'smooth'
       });
     }
-  }, [currentIndex, response.length]);
+  }, [currentIndex, response.length, isMobile, keyboardHeight]);
 
   // Main typing logic with keyboard handling
   useEffect(() => {
@@ -279,7 +319,14 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
           <div className="fixed bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-dark via-white/90 dark:via-dark/90 to-transparent z-10 pointer-events-none transition-colors"></div>
           
           <div className="min-h-full flex flex-col items-center">
-            <div className="max-w-3xl w-full px-4 sm:px-6 md:px-16 pt-12 sm:pt-16 md:pt-24 pb-[40vh] sm:pb-[50vh] md:pb-[60vh] relative z-20">
+            <div 
+              className="max-w-3xl w-full px-4 sm:px-6 md:px-16 pt-12 sm:pt-16 md:pt-24 relative z-20"
+              style={{ 
+                paddingBottom: isMobile && keyboardHeight > 0 
+                  ? `${Math.max(keyboardHeight + 20, 100)}px` 
+                  : undefined 
+              }}
+            >
               {/* Scenario metadata - compact header */}
               {(scenarioTitle || category || difficulty) && (
                 <div className="mb-8 md:mb-12 flex items-center justify-center gap-3 text-xs opacity-50">

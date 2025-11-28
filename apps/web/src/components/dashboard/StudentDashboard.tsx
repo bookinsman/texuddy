@@ -18,11 +18,12 @@ interface StudentDashboardProps {
   emails: Email[];
   skippedEmails: Email[];
   completedEmails: Email[];
-  activeTab: 'available' | 'skipped' | 'completed' | 'stats' | 'progress' | 'badges' | 'goals';
+  activeTab: 'available' | 'skipped' | 'completed' | 'stats' | 'progress' | 'badges' | 'goals' | 'leaderboard';
   onSelectEmail: (email: Email) => void;
   onSkipEmail?: (email: Email) => void;
   onShowStats: () => void;
-  onTabChange: (tab: 'available' | 'skipped' | 'completed' | 'stats' | 'progress' | 'badges' | 'goals') => void;
+  onTabChange: (tab: 'available' | 'skipped' | 'completed' | 'stats' | 'progress' | 'badges' | 'goals' | 'leaderboard') => void;
+  onShowLeaderboard?: () => void;
   dailyStats: Array<{ date: string; helped: number; wordsRetyped: number }>;
   isSoloGrinder?: boolean;
 }
@@ -38,7 +39,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   onShowStats,
   onTabChange,
   dailyStats,
-  isSoloGrinder = false
+  isSoloGrinder = false,
+  onShowLeaderboard
 }) => {
   const totalCompleted = completedEmails.length;
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -110,6 +112,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
         <div className={`
           fixed lg:static inset-y-0 left-0 z-40 lg:z-auto
+          w-80 lg:w-80
           transform transition-transform duration-300 ease-in-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
@@ -119,6 +122,15 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             dailyStats={dailyStats}
             completedEmails={completedEmails}
             isSoloGrinder={isSoloGrinder}
+            onLeaderboardClick={() => {
+              if (onShowLeaderboard) {
+                onShowLeaderboard();
+              } else {
+                onTabChange('leaderboard');
+              }
+              setSidebarOpen(false);
+            }}
+            onCloseSidebar={() => setSidebarOpen(false)}
           />
         </div>
 
@@ -150,7 +162,15 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 ))}
               </div>
               <div className="flex-1 overflow-hidden">
-                {activeTab === 'stats' ? (
+                {activeTab === 'leaderboard' ? (
+                  <div className="h-full flex flex-col">
+                    <Leaderboard 
+                      userWords={user.wordsRetyped || 0} 
+                      userName={user.studentName}
+                      userCompletedSubjects={userCompletedSubjects}
+                    />
+                  </div>
+                ) : activeTab === 'stats' ? (
                   <StatsContainer dailyStats={dailyStats} />
                 ) : activeTab === 'progress' ? (
                   <ProgressTab completedEmails={completedEmails} />
