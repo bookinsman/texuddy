@@ -1,7 +1,7 @@
 {
-  "buildCommand": "npm run build --workspace=@replygenius/web",
-  "outputDirectory": "apps/web/.next",
+  "buildCommand": "cd apps/web && npm run build",
   "installCommand": "npm install",
+  "outputDirectory": "apps/web/.next",
   "framework": "nextjs"
 }
 
