@@ -155,6 +155,13 @@ export default function SoloPage() {
   const handleShowStats = () => {
     setActiveTab('stats');
   };
+
+  const handleTabChange = (tab: 'available' | 'skipped' | 'completed' | 'stats' | 'progress' | 'badges' | 'goals') => {
+    // Filter out 'goals' tab for solo grinder
+    if (tab !== 'goals') {
+      setActiveTab(tab as 'available' | 'skipped' | 'completed' | 'stats' | 'progress' | 'badges');
+    }
+  };
   
   if (selectedEmail) {
     return (
@@ -178,7 +185,7 @@ export default function SoloPage() {
       onSelectEmail={handleSelectEmail}
       onSkipEmail={handleSkipEmail}
       onShowStats={handleShowStats}
-      onTabChange={setActiveTab}
+      onTabChange={handleTabChange}
       dailyStats={dailyStats}
       isSoloGrinder={isSoloGrinder}
     />
