@@ -58,19 +58,39 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
     if (!isMobile) return;
     
     const handleResize = () => {
-      const viewportHeight = window.visualViewport?.height || window.innerHeight;
-      const windowHeight = window.innerHeight;
-      const heightDiff = windowHeight - viewportHeight;
-      setKeyboardHeight(Math.max(0, heightDiff));
+      // Use visualViewport API for modern browsers (iOS Safari, Chrome Android)
+      if (window.visualViewport) {
+        const viewportHeight = window.visualViewport.height;
+        const windowHeight = window.innerHeight;
+        const heightDiff = windowHeight - viewportHeight;
+        setKeyboardHeight(Math.max(0, heightDiff));
+      } else {
+        // Fallback for older browsers
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.clientHeight;
+        const heightDiff = windowHeight - documentHeight;
+        setKeyboardHeight(Math.max(0, heightDiff));
+      }
     };
 
+    // Listen to visualViewport resize (iOS Safari, Chrome Android)
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', handleResize);
+      window.visualViewport.addEventListener('scroll', handleResize);
       handleResize();
-      return () => window.visualViewport?.removeEventListener('resize', handleResize);
+      return () => {
+        window.visualViewport?.removeEventListener('resize', handleResize);
+        window.visualViewport?.removeEventListener('scroll', handleResize);
+      };
     } else {
+      // Fallback for older browsers
       window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
+      window.addEventListener('orientationchange', handleResize);
+      handleResize();
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        window.removeEventListener('orientationchange', handleResize);
+      };
     }
   }, [isMobile]);
 
@@ -78,8 +98,8 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
     inputRef.current?.focus();
   }, []);
 
-  // Smart scroll logic - keeps cursor in view (30% from top, 40% near end)
-  // On mobile, accounts for keyboard height
+  // Smart scroll logic - keeps cursor in view
+  // On mobile: when about 4 rows from keyboard, center the text
   useEffect(() => {
     if (activeCharRef.current && containerRef.current) {
       const container = containerRef.current;
@@ -87,37 +107,73 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
       
       const containerRect = container.getBoundingClientRect();
       const elementRect = element.getBoundingClientRect();
-      let containerHeight = containerRect.height;
       
-      // On mobile, adjust for keyboard
       if (isMobile && keyboardHeight > 0) {
-        containerHeight = containerHeight - keyboardHeight;
-      }
-      
-      // Check if we're near the end of the text
-      const isNearEnd = currentIndex >= response.length * 0.85;
-      
-      const relativeTop = elementRect.top - containerRect.top + container.scrollTop;
-      
-      let targetScroll: number;
-      
-      if (isNearEnd) {
-        // Near the end: position cursor higher (40% from top)
-        targetScroll = relativeTop - (containerHeight * 0.40) + (elementRect.height / 2);
-        const maxScroll = container.scrollHeight - containerHeight;
-        targetScroll = Math.min(targetScroll, maxScroll);
+        // Mobile with keyboard visible - use visualViewport for accurate positioning
+        const viewport = window.visualViewport;
+        const viewportHeight = viewport?.height || window.innerHeight;
+        const viewportTop = viewport?.offsetTop || 0;
+        
+        // Calculate keyboard top position
+        const keyboardTop = viewportTop + viewportHeight;
+        const elementBottom = elementRect.bottom;
+        const distanceToKeyboard = keyboardTop - elementBottom;
+        
+        // Calculate line height based on font size (line-height is typically 1.5x font size)
+        const lineHeight = fontSize * 1.5;
+        const fourRowsHeight = lineHeight * 4;
+        
+        // If we're within 4 rows of keyboard, center the text
+        if (distanceToKeyboard <= fourRowsHeight && distanceToKeyboard > -lineHeight) {
+          // Center the active character in the visible area above keyboard
+          const visibleAreaTop = containerRect.top;
+          const visibleAreaBottom = keyboardTop;
+          const visibleAreaHeight = visibleAreaBottom - visibleAreaTop;
+          const centerPosition = visibleAreaHeight / 2;
+          
+          // Calculate scroll position to center the element
+          const elementTopRelative = elementRect.top - containerRect.top + container.scrollTop;
+          const targetScroll = elementTopRelative - centerPosition + (elementRect.height / 2);
+          
+          container.scrollTo({
+            top: Math.max(0, targetScroll),
+            behavior: 'smooth'
+          });
+        } else if (distanceToKeyboard > fourRowsHeight) {
+          // Normal scrolling - keep cursor visible but not too close to keyboard
+          const relativeTop = elementRect.top - containerRect.top + container.scrollTop;
+          const visibleHeight = viewportHeight - containerRect.top;
+          const topOffset = visibleHeight * 0.25; // Keep it a bit higher on mobile
+          const targetScroll = relativeTop - topOffset + (elementRect.height / 2);
+          
+          container.scrollTo({
+            top: Math.max(0, targetScroll),
+            behavior: 'smooth'
+          });
+        }
       } else {
-        // Normal position: 30% from the top, but on mobile with keyboard, use less space
-        const topOffset = isMobile && keyboardHeight > 0 ? 0.20 : 0.30;
-        targetScroll = relativeTop - (containerHeight * topOffset) + (elementRect.height / 2);
+        // Desktop or mobile without keyboard
+        const containerHeight = containerRect.height;
+        const isNearEnd = currentIndex >= response.length * 0.85;
+        const relativeTop = elementRect.top - containerRect.top + container.scrollTop;
+        
+        let targetScroll: number;
+        
+        if (isNearEnd) {
+          targetScroll = relativeTop - (containerHeight * 0.40) + (elementRect.height / 2);
+          const maxScroll = container.scrollHeight - containerHeight;
+          targetScroll = Math.min(targetScroll, maxScroll);
+        } else {
+          targetScroll = relativeTop - (containerHeight * 0.30) + (elementRect.height / 2);
+        }
+        
+        container.scrollTo({
+          top: Math.max(0, targetScroll),
+          behavior: 'smooth'
+        });
       }
-      
-      container.scrollTo({
-        top: Math.max(0, targetScroll),
-        behavior: 'smooth'
-      });
     }
-  }, [currentIndex, response.length, isMobile, keyboardHeight]);
+  }, [currentIndex, response.length, isMobile, keyboardHeight, fontSize]);
 
   // Main typing logic with keyboard handling
   useEffect(() => {
@@ -323,7 +379,9 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
               className="max-w-3xl w-full px-4 sm:px-6 md:px-16 pt-12 sm:pt-16 md:pt-24 relative z-20"
               style={{ 
                 paddingBottom: isMobile && keyboardHeight > 0 
-                  ? `${Math.max(keyboardHeight + 20, 100)}px` 
+                  ? `${Math.max(keyboardHeight + 40, 120)}px` 
+                  : isMobile
+                  ? '80px'
                   : undefined 
               }}
             >

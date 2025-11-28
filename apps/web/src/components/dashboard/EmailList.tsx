@@ -15,7 +15,6 @@ export const EmailList: React.FC<EmailListProps> = ({ emails, onSelectEmail, onS
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [skippingId, setSkippingId] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [showScrollButton, setShowScrollButton] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -24,26 +23,6 @@ export const EmailList: React.FC<EmailListProps> = ({ emails, onSelectEmail, onS
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  useEffect(() => {
-    if (isMobile && scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const checkScroll = () => {
-        const hasScroll = container.scrollHeight > container.clientHeight;
-        const isScrolled = container.scrollTop < container.scrollHeight - container.clientHeight - 10;
-        setShowScrollButton(hasScroll && isScrolled);
-      };
-      checkScroll();
-      container.addEventListener('scroll', checkScroll);
-      return () => container.removeEventListener('scroll', checkScroll);
-    }
-  }, [isMobile, emails.length]);
-
-  const scrollDown = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ top: 300, behavior: 'smooth' });
-    }
-  };
 
   const truncateText = (text: string, maxLength: number = 60) => {
     if (text.length <= maxLength) return text;
@@ -135,17 +114,6 @@ export const EmailList: React.FC<EmailListProps> = ({ emails, onSelectEmail, onS
             </>
           )}
         </div>
-        {isMobile && showScrollButton && (
-          <button
-            onClick={scrollDown}
-            className="fixed bottom-20 right-4 z-50 bg-gray-900 dark:bg-white text-white dark:text-black rounded-full p-3 shadow-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-all animate-bounce"
-            aria-label="Scroll down"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-          </button>
-        )}
       </div>
     </div>
   );
