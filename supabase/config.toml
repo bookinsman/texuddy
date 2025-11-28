@@ -3,7 +3,7 @@
 # For now, it's a placeholder
 
 [project]
-name = "replygenius"
+name = "texuddy"
 
 [api]
 enabled = true

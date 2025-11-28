@@ -1,4 +1,4 @@
-# ReplyGenius Architecture
+# Texuddy Architecture
 
 ## Project Structure Overview
 
@@ -12,7 +12,7 @@ This monorepo is structured to support:
 ## Directory Structure
 
 ```
-replygenius/
+texuddy/
 ├── apps/
 │   ├── mobile/                 # React Native (Expo) app
 │   │   ├── app/                # Expo Router screens
@@ -98,12 +98,12 @@ replygenius/
 - `expo` - Expo framework
 - `expo-router` - File-based routing
 - `react-native` - React Native core
-- Shared packages: `@replygenius/ui`, `@replygenius/utils`, `@replygenius/config`
+- Shared packages: `@texuddy/ui`, `@texuddy/utils`, `@texuddy/config`
 
 ### Web App Dependencies
 - `next` - Next.js framework
 - `react` - React library
-- Shared packages: `@replygenius/ui`, `@replygenius/utils`, `@replygenius/config`
+- Shared packages: `@texuddy/ui`, `@texuddy/utils`, `@texuddy/config`
 
 ## Future Integration Points
 
@@ -112,7 +112,7 @@ When ready to integrate Supabase:
 
 1. **Install Supabase client**:
    ```bash
-   npm install @supabase/supabase-js --workspace=@replygenius/supabase
+   npm install @supabase/supabase-js --workspace=@texuddy/supabase
    ```
 
 2. **Update `packages/supabase/src/client.ts`**:
@@ -142,7 +142,7 @@ When ready to deploy web app:
 3. **Deploy**:
    - Connect GitHub repo to Vercel
    - Vercel will auto-detect Next.js app
-   - Configure build command: `npm run build --workspace=@replygenius/web`
+   - Configure build command: `npm run build --workspace=@texuddy/web`
 
 ## Development Workflow
 
@@ -176,10 +176,10 @@ When ready to deploy web app:
 
 ## Code Sharing Strategy
 
-- **UI Components**: Use `@replygenius/ui` for components that work on both web and mobile
-- **Utilities**: Use `@replygenius/utils` for pure functions (date, validation, formatting)
-- **Configuration**: Use `@replygenius/config` for constants and environment variables
-- **Database**: Use `@replygenius/supabase` for database client and types
+- **UI Components**: Use `@texuddy/ui` for components that work on both web and mobile
+- **Utilities**: Use `@texuddy/utils` for pure functions (date, validation, formatting)
+- **Configuration**: Use `@texuddy/config` for constants and environment variables
+- **Database**: Use `@texuddy/supabase` for database client and types
 
 ## Next Steps
 

@@ -1,8 +1,7 @@
 export default function Home() {
   return (
     <main>
-      <h1>ReplyGenius</h1>
-      <p>Your AI Partner in Helping Others</p>
+      <h1>Texuddy</h1>
     </main>
   )
 }

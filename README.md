@@ -1,8 +1,4 @@
-# ReplyGenius Monorepo
-
-**Your AI Partner in Helping Others**
-
-Educational platform where children (ages 9-14) become "Helper Agents" who assist real people with problems by retyping expert advice.
+# Texuddy Monorepo
 
 ## 🏗️ Project Structure
 
@@ -46,8 +42,8 @@ cp .env.example .env
 npm run dev
 
 # Run specific app
-npm run dev --workspace=@replygenius/mobile
-npm run dev --workspace=@replygenius/web
+npm run dev --workspace=@texuddy/mobile
+npm run dev --workspace=@texuddy/web
 ```
 
 ### Building
@@ -57,22 +53,22 @@ npm run dev --workspace=@replygenius/web
 npm run build
 
 # Build specific package
-npm run build --workspace=@replygenius/ui
+npm run build --workspace=@texuddy/ui
 ```
 
 ## 📦 Workspaces
 
 ### Apps
 
-- **@replygenius/mobile** - React Native Expo app
-- **@replygenius/web** - Next.js web app
+- **@texuddy/mobile** - React Native Expo app
+- **@texuddy/web** - Next.js web app
 
 ### Packages
 
-- **@replygenius/ui** - Shared UI components (React Native compatible)
-- **@replygenius/utils** - Shared utilities (date, validation, formatting)
-- **@replygenius/config** - Configuration and constants
-- **@replygenius/supabase** - Supabase client setup (placeholder for future)
+- **@texuddy/ui** - Shared UI components (React Native compatible)
+- **@texuddy/utils** - Shared utilities (date, validation, formatting)
+- **@texuddy/config** - Configuration and constants
+- **@texuddy/supabase** - Supabase client setup (placeholder for future)
 
 ## 🛠️ Tech Stack
 
