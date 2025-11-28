@@ -1,29 +1,59 @@
-# Texuddy Monorepo
+# Texuddy
 
-## 🏗️ Project Structure
+**Prepare for future challenges - Build a better mind via retyping professional texts**
+
+Educational platform where children (ages 9-14) prepare for future challenges by retyping professional texts to build better minds and develop communication skills.
+
+## How It Works
+
+### The Science Behind Retyping
+
+By retyping professional responses, students teach their brains to:
+
+- **Memorize Vocabulary** - Professional terms, phrases, and business language become part of their active vocabulary through repeated exposure and practice
+- **Learn Sentence Structure** - Complex professional sentence patterns, formal constructions, and persuasive language structures are internalized through focused repetition
+- **Insert into Subconscious** - Through consistent retyping practice, professional communication patterns become second nature, stored in the subconscious mind for automatic recall
+
+### Focus Areas
+
+The platform focuses on real-world professional scenarios including:
+
+- **Communication Skills** - Clear, effective professional communication, team collaboration, client relations
+- **Sales Mastery** - Persuasive proposals, client retention strategies, closing techniques, value propositions
+- **Negotiation Skills** - Diplomatic negotiations, contract discussions, partnership proposals, win-win solutions
+
+### The Learning Process
+
+1. **Read** - Students read professional responses to real business situations
+2. **Retype** - They carefully retype each word, building muscle memory and neural pathways
+3. **Internalize** - Vocabulary, sentence structures, and communication patterns are stored in long-term memory
+4. **Apply** - These patterns become available for future use in real-world professional situations
+
+Each retyping session builds neural pathways that make professional communication feel natural and automatic, preparing students for future career challenges.
+
+## Project Structure
 
 ```
-replygenius/
+texuddy/
 ├── apps/
-│   ├── mobile/          # React Native app (Expo)
-│   └── web/             # Next.js app
+│   ├── web/              # Next.js web application
+│   └── mobile/           # React Native app (Expo)
 ├── packages/
-│   ├── ui/              # Shared UI components
-│   ├── utils/           # Shared utilities
-│   ├── config/          # Configuration & constants
-│   └── supabase/        # Supabase client & types (placeholder)
-├── supabase/
-│   ├── migrations/      # SQL migrations (future)
-│   └── functions/       # Edge functions (future)
-└── package.json         # Workspace root
+│   ├── ui/               # Shared UI components
+│   ├── utils/            # Shared utilities
+│   └── types/            # TypeScript type definitions
+├── package.json          # Root workspace config
+├── turbo.json           # Turborepo config
+└── tsconfig.json        # Shared TypeScript config
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-- Node.js >= 18.0.0
-- npm >= 9.0.0
+- Node.js 18+ 
+- npm or yarn
+- For mobile: Expo CLI (`npm install -g expo-cli`) or Expo Go app on your phone
 
 ### Installation
 
@@ -31,83 +61,68 @@ replygenius/
 # Install dependencies
 npm install
 
-# Copy environment variables
-cp .env.example .env
+# Run web development server
+cd apps/web
+npm run dev
 ```
 
-### Development
+The web app will be available at `http://localhost:3000`
+
+### Mobile App
 
 ```bash
-# Run all apps in development mode
+# Navigate to mobile app
+cd apps/mobile
+
+# Install mobile dependencies (if needed)
+npm install
+
+# Start Expo development server
+npm start
+# or
+npx expo start
+```
+
+Then scan the QR code with Expo Go app (iOS/Android) or press `w` to open in web browser.
+
+## Tech Stack
+
+- **Frontend**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Monorepo**: Turborepo
+- **Future**: Supabase (auth + database), Vercel (hosting)
+
+## Development
+
+```bash
+# Run all apps in dev mode
 npm run dev
 
-# Run specific app
-npm run dev --workspace=@texuddy/mobile
-npm run dev --workspace=@texuddy/web
-```
-
-### Building
-
-```bash
-# Build all packages and apps
+# Build all packages
 npm run build
 
-# Build specific package
-npm run build --workspace=@texuddy/ui
+# Type check
+npm run type-check
+
+# Lint
+npm run lint
 ```
 
-## 📦 Workspaces
+## Features (In Development)
 
-### Apps
+- ✅ Monorepo structure
+- ✅ TypeScript setup
+- ✅ Shared UI components
+- ✅ Web app (Next.js)
+- ✅ Mobile app (React Native/Expo)
+- ✅ Email system
+- ✅ AI companion system
+- ✅ Retyping interface
+- ✅ Gamification system
+- ✅ Parent/Kid dashboards
+- 🔄 Authentication system (Supabase ready)
 
-- **@texuddy/mobile** - React Native Expo app
-- **@texuddy/web** - Next.js web app
+## License
 
-### Packages
-
-- **@texuddy/ui** - Shared UI components (React Native compatible)
-- **@texuddy/utils** - Shared utilities (date, validation, formatting)
-- **@texuddy/config** - Configuration and constants
-- **@texuddy/supabase** - Supabase client setup (placeholder for future)
-
-## 🛠️ Tech Stack
-
-- **Monorepo**: Turborepo
-- **Mobile**: React Native (Expo)
-- **Web**: Next.js 14
-- **Language**: TypeScript
-- **Package Manager**: npm workspaces
-
-## 🔮 Future Integrations
-
-This structure is prepared for:
-
-- **Supabase**: Database, authentication, real-time features
-- **Vercel**: Web app deployment
-- **Stripe**: Payment processing
-- **Analytics**: User behavior tracking
-
-## 📝 Scripts
-
-- `npm run dev` - Start all apps in development
-- `npm run build` - Build all packages and apps
-- `npm run lint` - Lint all packages
-- `npm run test` - Run tests
-- `npm run clean` - Clean build artifacts
-
-## 🎯 Core Features (To Be Implemented)
-
-1. User Authentication (Parent & Kid accounts)
-2. Email System (100+ pre-written emails)
-3. AI Companion System (gamification)
-4. Keyword Selection Interface
-5. Retyping Interface with validation
-6. Gamification (points, streaks, badges)
-7. Reward System (unlock codes)
-8. Parent Dashboard
-9. Progress Tracking
-
-## 📄 License
-
-Private - All rights reserved
-
+Private

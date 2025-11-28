@@ -1,0 +1,328 @@
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
+
+interface RetypingInterfaceMinimalProps {
+  response: string;
+  onComplete: () => void;
+  onBack?: () => void;
+  scenarioTitle?: string;
+  category?: string;
+  difficulty?: 'easy' | 'medium' | 'hard';
+}
+
+// Skip special characters (punctuation, etc.)
+const isSkippedChar = (char: string) => {
+  return /[^a-zA-Z0-9\s]/.test(char);
+};
+
+// Find the first index that isn't a special character
+const getInitialIndex = (text: string) => {
+  let i = 0;
+  while (i < text.length && isSkippedChar(text[i])) {
+    i++;
+  }
+  return i;
+};
+
+export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> = ({
+  response,
+  onComplete,
+  onBack,
+  scenarioTitle,
+  category,
+  difficulty = 'medium'
+}) => {
+  const [currentIndex, setCurrentIndex] = useState(() => getInitialIndex(response));
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [fontSize, setFontSize] = useState(22);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const activeCharRef = useRef<HTMLSpanElement>(null);
+  const wordCount = response.split(/\s+/).length;
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  // Smart scroll logic - keeps cursor in view (30% from top, 40% near end)
+  useEffect(() => {
+    if (activeCharRef.current && containerRef.current) {
+      const container = containerRef.current;
+      const element = activeCharRef.current;
+      
+      const containerRect = container.getBoundingClientRect();
+      const elementRect = element.getBoundingClientRect();
+      const containerHeight = containerRect.height;
+      
+      // Check if we're near the end of the text
+      const isNearEnd = currentIndex >= response.length * 0.85;
+      
+      const relativeTop = elementRect.top - containerRect.top + container.scrollTop;
+      
+      let targetScroll: number;
+      
+      if (isNearEnd) {
+        // Near the end: position cursor higher (40% from top)
+        targetScroll = relativeTop - (containerHeight * 0.40) + (elementRect.height / 2);
+        const maxScroll = container.scrollHeight - containerHeight;
+        targetScroll = Math.min(targetScroll, maxScroll);
+      } else {
+        // Normal position: 30% from the top
+        targetScroll = relativeTop - (containerHeight * 0.30) + (elementRect.height / 2);
+      }
+      
+      container.scrollTo({
+        top: Math.max(0, targetScroll),
+        behavior: 'smooth'
+      });
+    }
+  }, [currentIndex, response.length]);
+
+  // Main typing logic with keyboard handling
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      
+      if (!startTime) setStartTime(Date.now());
+      
+      if (e.key === 'Backspace') {
+        if (currentIndex > 0) {
+          let prev = currentIndex - 1;
+          // Skip backwards over special characters
+          while (prev > 0 && isSkippedChar(response[prev])) {
+            prev--;
+          }
+          setCurrentIndex(prev);
+        }
+        return;
+      }
+      
+      if (e.key.length === 1) {
+        if (currentIndex >= response.length) return;
+        
+        const targetChar = response[currentIndex];
+        if (!targetChar) return;
+        
+        const isMatch = e.key.toLowerCase() === targetChar.toLowerCase();
+        
+        if (isMatch) {
+          let nextIndex = currentIndex + 1;
+          // Skip forward over special characters
+          while (nextIndex < response.length && isSkippedChar(response[nextIndex])) {
+            nextIndex++;
+          }
+          setCurrentIndex(nextIndex);
+          
+          if (nextIndex >= response.length) {
+            setTimeout(() => onComplete(), 150);
+          }
+        }
+        // No visual error feedback - just don't advance
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentIndex, response, onComplete, startTime]);
+
+  // Mobile input handler
+  const handleMobileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!startTime) setStartTime(Date.now());
+    const val = e.target.value;
+    if (!val) return;
+    
+    if (currentIndex >= response.length) {
+      e.target.value = '';
+      return;
+    }
+    
+    const inputChar = val.slice(-1);
+    const targetChar = response[currentIndex];
+    
+    if (targetChar && inputChar.toLowerCase() === targetChar.toLowerCase()) {
+      let nextIndex = currentIndex + 1;
+      while (nextIndex < response.length && isSkippedChar(response[nextIndex])) {
+        nextIndex++;
+      }
+      setCurrentIndex(nextIndex);
+      if (nextIndex >= response.length) {
+        setTimeout(() => onComplete(), 150);
+      }
+    }
+    e.target.value = '';
+  };
+
+  const focusInput = () => inputRef.current?.focus();
+  const progress = Math.round((currentIndex / response.length) * 100);
+
+  const chars = response.split('');
+
+  const displayText = chars.map((char, index) => {
+    const isActive = index === currentIndex;
+    const isCompleted = index < currentIndex;
+    const isFuture = index > currentIndex;
+    
+    // Progressive opacity/blur logic for future text
+    let opacityClass = 'opacity-100';
+    let blurClass = 'blur-0';
+    
+    if (isFuture) {
+      const distance = index - currentIndex;
+      
+      if (distance > 150) {
+        opacityClass = 'opacity-0 duration-1000';
+      } else if (distance > 80) {
+        opacityClass = 'opacity-10 blur-[2px] duration-700';
+      } else if (distance > 40) {
+        opacityClass = 'opacity-40 blur-[1px] duration-500';
+      } else if (distance > 15) {
+        opacityClass = 'opacity-70 duration-300';
+      } else {
+        opacityClass = 'opacity-100';
+      }
+    } else if (isCompleted) {
+      opacityClass = 'opacity-100';
+    }
+
+    // Regular characters - no drop cap
+    return (
+      <span 
+        key={index}
+        ref={isActive ? activeCharRef : null}
+        className={`relative transition-all ease-out duration-500 ${opacityClass} ${blurClass}`}
+      >
+        {/* Cursor BEFORE the active character */}
+        {isActive && (
+          <span className="absolute -left-0.5 top-0 bottom-0 w-0.5 bg-black dark:bg-white animate-pulse" />
+        )}
+
+        <span className={`
+          ${isCompleted ? 'text-black dark:text-white' : ''}
+          ${isFuture ? 'text-gray-400 dark:text-gray-600' : ''}
+          ${isActive ? 'text-gray-400 dark:text-gray-600' : ''}
+        `}>
+          {char}
+        </span>
+      </span>
+    );
+  });
+
+  return (
+    <div className="min-h-screen bg-white dark:bg-dark flex flex-col transition-colors">
+      {/* Main Content - Full Height */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Progress Bar with Back Button */}
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 dark:border-dark-100 bg-white dark:bg-dark shadow-sm relative z-30 transition-colors">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center justify-between mb-2 sm:mb-3 gap-4">
+              {onBack && (
+                <button
+                  onClick={onBack}
+                  className="text-base font-bold text-black dark:text-white hover:text-gray-700 dark:hover:text-gray-300 transition-colors flex items-center gap-2 flex-shrink-0 group"
+                >
+                  <svg 
+                    className="w-5 h-5 transition-transform group-hover:-translate-x-1" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span>Back</span>
+                </button>
+              )}
+              <div className="flex items-center gap-3 ml-auto">
+                {/* Font Size Controls - Compact */}
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setFontSize(prev => Math.max(12, prev - 2))}
+                    className="text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 font-bold text-base leading-none w-5 h-5 flex items-center justify-center transition-colors"
+                    title="Decrease font size"
+                  >
+                    −
+                  </button>
+                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400 min-w-[2.5rem] text-center">
+                    {fontSize}px
+                  </span>
+                  <button
+                    onClick={() => setFontSize(prev => Math.min(32, prev + 2))}
+                    className="text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 font-bold text-base leading-none w-5 h-5 flex items-center justify-center transition-colors"
+                    title="Increase font size"
+                  >
+                    +
+                  </button>
+                </div>
+                <div className="text-base sm:text-lg font-bold min-w-[3rem] sm:min-w-[4rem] text-right flex-shrink-0 text-black dark:text-white">
+                  {progress}%
+                </div>
+              </div>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-dark-100 rounded-full h-1.5 overflow-hidden shadow-inner transition-colors">
+              <div
+                className="bg-gray-900 dark:bg-white h-full transition-all duration-300 ease-out rounded-full"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Text Area - The Flow State */}
+        <div 
+          className="flex-1 overflow-y-auto cursor-text relative scroll-smooth"
+          onClick={focusInput}
+          ref={containerRef}
+        >
+          {/* Top/Bottom Fade Masks - positioned below header */}
+          <div className="fixed top-[73px] sm:top-[81px] left-0 right-0 h-24 bg-gradient-to-b from-white dark:from-dark via-white/90 dark:via-dark/90 to-transparent z-10 pointer-events-none transition-colors"></div>
+          <div className="fixed bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-dark via-white/90 dark:via-dark/90 to-transparent z-10 pointer-events-none transition-colors"></div>
+          
+          <div className="min-h-full flex flex-col items-center">
+            <div className="max-w-3xl w-full px-4 sm:px-6 md:px-16 pt-12 sm:pt-16 md:pt-24 pb-[40vh] sm:pb-[50vh] md:pb-[60vh] relative z-20">
+              {/* Scenario metadata - compact header */}
+              {(scenarioTitle || category || difficulty) && (
+                <div className="mb-8 md:mb-12 flex items-center justify-center gap-3 text-xs opacity-50">
+                  {category && (
+                    <span className="font-semibold text-gray-900 dark:text-white">{category}</span>
+                  )}
+                  {category && difficulty && <span className="text-gray-400">•</span>}
+                  {difficulty && (
+                    <span className="capitalize text-gray-600 dark:text-gray-400">{difficulty}</span>
+                  )}
+                </div>
+              )}
+
+              {/* Main Text Block */}
+              <p
+                className="font-serif leading-relaxed text-left outline-none tracking-normal"
+                style={{ fontSize: `${fontSize}px` }}
+              >
+                {displayText}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Input */}
+        <input 
+          ref={inputRef}
+          type="text"
+          className="opacity-0 absolute -z-10"
+          autoFocus
+          inputMode="text"
+          autoComplete="off"
+          onChange={handleMobileInput}
+        />
+
+        {/* Footer Stats */}
+        <div className="border-t border-gray-200 dark:border-dark-100 px-6 py-3 bg-gray-50 dark:bg-dark-50 transition-colors">
+          <div className="max-w-4xl mx-auto flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+            <span>{currentIndex} / {response.length}</span>
+            <span>{wordCount} words</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
