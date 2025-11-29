@@ -111,92 +111,115 @@ export function ProgressTab({ completedEmails }: ProgressTabProps) {
   const totalPossible = categoryProgress.reduce((sum, cat) => sum + cat.total, 0);
   const overallPercentage = Math.round((totalCompleted / totalPossible) * 100);
 
+  const filteredCategories = useMemo(() => {
+    if (selectedModule === 'All') return categoryProgress;
+    
+    // Map modules to category names
+    const moduleCategoryMap: Record<string, string[]> = {
+      'Careers': ['Software Developer', 'Marketing Specialist', 'Customer Service', 'Accountant', 'HR Manager', 'Sales Manager', 'Logistics Coordinator', 'Graphic Designer', 'Teacher', 'Nurse', 'Mechanic', 'Electrician', 'Chef', 'Retail Manager', 'Real Estate Agent', 'Bank Employee', 'Construction Manager', 'Pharmacist', 'Lawyer', 'Architect', 'Tour Guide', 'Photographer', 'Journalist', 'Social Worker', 'Project Manager', 'Data Analyst', 'Personal Trainer', 'Event Planning', 'Translator', 'Video Editor', 'Marketing Researcher', 'Product Manager', 'Consultant', 'IT Support', 'Internal Auditor', 'Content Creator', 'Test Engineer', 'Administrative Manager', 'Financial Analyst', 'Customer Success Manager'],
+      'Philosophy': ['Philosophy'],
+      'Psychology': ['Psychology'],
+      'Sales': ['Sales'],
+      'Motivation': ['Motivation'],
+      'Quotes': ['Quotes'],
+      'Communications': ['Communications']
+    };
+    
+    const categoriesInModule = moduleCategoryMap[selectedModule] || [];
+    return categoryProgress.filter(cat => categoriesInModule.includes(cat.name));
+  }, [categoryProgress, selectedModule]);
+
   return (
     <div className="h-full overflow-y-auto">
-      <div className="space-y-4 p-2">
-        {/* Module Filter Dropdown */}
-        <div className="flex items-center gap-3 mb-4">
-          <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Module:</label>
-          <select
-            value={selectedModule}
-            onChange={(e) => setSelectedModule(e.target.value as typeof MODULES[number])}
-            className="flex-1 px-3 py-2 text-sm bg-white dark:bg-dark-50 border border-gray-200 dark:border-dark-200 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 transition-colors duration-500"
-          >
-            {MODULES.map((module) => (
-              <option key={module} value={module}>
-                {module}
-              </option>
-            ))}
-          </select>
+      <div className="space-y-4 p-4">
+        {/* Module Filter - Compact Pills */}
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 mr-1">Modules:</span>
+          {MODULES.map((module) => (
+            <button
+              key={module}
+              onClick={() => setSelectedModule(module)}
+              className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+                selectedModule === module
+                  ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-sm'
+                  : 'bg-white dark:bg-dark-50 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-dark-200 hover:bg-gray-50 dark:hover:bg-dark-100'
+              }`}
+            >
+              {module}
+            </button>
+          ))}
         </div>
 
-        <div className="bg-gray-50 dark:bg-dark-100/50 rounded-lg p-4 border border-gray-200 dark:border-dark-200 transition-colors duration-500">
-          <h2 className="text-sm font-semibold text-gray-800 dark:text-white mb-2">Career Progress</h2>
-          <div className="flex items-center gap-4">
-            <div className="flex-1">
-              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Completed</div>
-              <div className="text-lg font-bold text-gray-900 dark:text-white">{totalCompleted} / {totalPossible}</div>
-          </div>
-            <div className="flex-1">
-              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Progress</div>
-              <div className="text-lg font-bold text-gray-900 dark:text-white">{overallPercentage}%</div>
+        {/* Overall Stats - Compact */}
+        <div className="bg-white dark:bg-dark-50 rounded-lg p-3 border border-gray-200 dark:border-dark-200 transition-colors duration-500">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div>
+                <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Completed</div>
+                <div className="text-base font-bold text-gray-900 dark:text-white">{totalCompleted} / {totalPossible}</div>
+              </div>
+              <div className="w-px h-8 bg-gray-200 dark:bg-dark-200"></div>
+              <div>
+                <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Progress</div>
+                <div className="text-base font-bold text-gray-900 dark:text-white">{overallPercentage}%</div>
+              </div>
+            </div>
+            <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-dark-100 flex items-center justify-center">
+              <div className="text-xs font-bold text-gray-900 dark:text-white">{overallPercentage}%</div>
+            </div>
           </div>
         </div>
-      </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-        {categoryProgress.map((cat) => {
+        {/* Module Cards - Compact Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5">
+        {filteredCategories.map((cat) => {
           const isComplete = cat.completed === cat.total;
           const isStarted = cat.completed > 0;
           
           return (
             <div
               key={cat.id}
-                className={`bg-white dark:bg-dark-50 rounded-lg p-3 border transition-colors duration-500 ${
+              className={`bg-white dark:bg-dark-50 rounded-lg p-2.5 border transition-all duration-200 hover:shadow-sm ${
                 isComplete
-                    ? 'border-gray-400 dark:border-white'
+                  ? 'border-gray-400 dark:border-white'
                   : isStarted
-                    ? 'border-gray-300 dark:border-dark-200'
-                    : 'border-gray-200 dark:border-dark-100'
+                  ? 'border-gray-300 dark:border-dark-200'
+                  : 'border-gray-200 dark:border-dark-100'
               }`}
             >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="text-black dark:text-white text-lg font-normal">{cat.icon}</div>
+              <div className="flex items-start justify-between mb-1.5">
+                <div className="text-black dark:text-white text-base">{cat.icon}</div>
                 {isComplete && (
-                    <span className="text-gray-600 dark:text-white text-xs">✓</span>
+                  <span className="text-gray-600 dark:text-white text-[10px] font-bold">✓</span>
                 )}
               </div>
               
-                <h3 className="font-medium text-gray-900 dark:text-white text-xs mb-2 line-clamp-2">
+              <h3 className="font-medium text-gray-900 dark:text-white text-[11px] mb-1.5 line-clamp-2 leading-tight">
                 {cat.name}
               </h3>
               
-                <div className="space-y-1.5">
-                <div className="flex justify-between items-center text-xs">
-                    <span className="text-gray-600 dark:text-gray-400">Minutes spent</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">{formatTime(cat.minutes)}</span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-gray-600 dark:text-gray-400">Words retyped</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">{cat.words.toLocaleString()}</span>
+              <div className="space-y-1">
+                <div className="flex justify-between items-center text-[10px]">
+                  <span className="text-gray-500 dark:text-gray-400">Time</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{formatTime(cat.minutes)}</span>
                 </div>
                 
-                  <div className="w-full bg-gray-200 dark:bg-dark-200 rounded-full h-1.5">
+                <div className="w-full bg-gray-200 dark:bg-dark-200 rounded-full h-1">
                   <div
-                      className={`h-1.5 rounded-full transition-all ${
+                    className={`h-1 rounded-full transition-all ${
                       isComplete
-                          ? 'bg-gray-800 dark:bg-white'
+                        ? 'bg-gray-800 dark:bg-white'
                         : isStarted
-                          ? 'bg-gray-600 dark:bg-white/80'
+                        ? 'bg-gray-600 dark:bg-white/80'
                         : 'bg-gray-300 dark:bg-dark-300'
                     }`}
                     style={{ width: `${cat.percentage}%` }}
                   />
                 </div>
                 
-                <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                    {cat.percentage}%
+                <div className="flex justify-between items-center text-[10px]">
+                  <span className="text-gray-500 dark:text-gray-400">{cat.completed}/{cat.total}</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{cat.percentage}%</span>
                 </div>
               </div>
             </div>

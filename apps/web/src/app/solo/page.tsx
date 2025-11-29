@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { StudentDashboard } from '@/components/dashboard/StudentDashboard';
 import { EmailFlow } from '@/components/email/EmailFlow';
 import { mockUser } from '@/lib/data/users';
@@ -32,6 +32,8 @@ export default function SoloPage() {
   });
   const [skippedEmails, setSkippedEmails] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'available' | 'skipped' | 'completed' | 'stats' | 'progress' | 'badges' | 'leaderboard'>('available');
+  const [filteredAvailableEmails, setFilteredAvailableEmails] = useState<Email[]>([]);
+  const [currentModule, setCurrentModule] = useState<'Mixed' | 'Careers' | 'Philosophy' | 'Psychology' | 'Sales' | 'Motivation' | 'Quotes' | 'Communications'>('Mixed');
   const [dailyStats, setDailyStats] = useState<DailyStats[]>(() => {
     // Load from localStorage on initial render
     if (typeof window !== 'undefined') {
@@ -75,6 +77,28 @@ export default function SoloPage() {
     );
   }, [userAge, completedEmails, skippedEmails, requestedEmails]);
 
+  // Recalculate filtered emails whenever availableEmails or module changes
+  useEffect(() => {
+    if (currentModule === 'Mixed') {
+      setFilteredAvailableEmails(availableEmails);
+      return;
+    }
+    
+    const moduleCategoryMap: Record<string, string[]> = {
+      'Careers': ['Graphic Designer', 'Retail Sales', 'Food Service', 'Software Developer', 'Social Media Manager', 'Tutor / Educator', 'Photographer', 'Restaurant Server', 'Fitness Trainer', 'Real Estate', 'Veterinary Assistant', 'Auto Mechanic', 'Marketing', 'Hair Stylist', 'Event Planning', 'Customer Support', 'Corporate Intern', 'Receptionist', 'Freelance Writer', 'Video Editor', 'Babysitter', 'Pharmacy Technician', 'Job Interview', 'Retail Management', 'Dental Assistant', 'Delivery Driver', 'Music Teacher', 'Library Assistant', 'Phone Sales', 'Administrative Assistant', 'Careers'],
+      'Philosophy': ['Philosophy'],
+      'Psychology': ['Psychology'],
+      'Sales': ['Sales'],
+      'Motivation': ['Motivation'],
+      'Quotes': ['Quotes'],
+      'Communications': ['Communications']
+    };
+    
+    const categoriesInModule = moduleCategoryMap[currentModule] || [];
+    const filtered = availableEmails.filter(email => categoriesInModule.includes(email.category));
+    setFilteredAvailableEmails(filtered);
+  }, [availableEmails, currentModule]);
+
   const skippedEmailsList = useMemo(() => {
     return getEmailsByAge(userAge).filter(email => skippedEmails.includes(email.id));
   }, [userAge, skippedEmails]);
@@ -99,6 +123,11 @@ export default function SoloPage() {
   };
 
   const handleComplete = (unlockCode: string) => {
+    // Don't set selectedEmail to null here - let EmailFlow show completion screen
+    // The completion screen will handle going back via onBack or onContinueNext
+  };
+
+  const handleMarkComplete = () => {
     if (selectedEmail) {
       setCompletedEmails(prev => {
         const updated = [...prev, selectedEmail.id];
@@ -125,14 +154,6 @@ export default function SoloPage() {
         }
         return updated;
       });
-      
-      setSelectedEmail(null);
-    }
-  };
-
-  const handleMarkComplete = () => {
-    if (selectedEmail) {
-      handleComplete('');
     }
   };
 
@@ -142,13 +163,38 @@ export default function SoloPage() {
 
   const handleContinueNext = () => {
     if (selectedEmail) {
-      handleComplete('');
-      const currentIndex = availableEmails.findIndex(e => e.id === selectedEmail.id);
-      if (currentIndex < availableEmails.length - 1) {
-        setSelectedEmail(availableEmails[currentIndex + 1]);
-      } else {
+      // Always use filteredAvailableEmails (it's kept in sync with availableEmails and module)
+      const emailsToUse = filteredAvailableEmails.length > 0 ? filteredAvailableEmails : availableEmails;
+      
+      // Ensure we have valid emails to work with
+      if (!emailsToUse || emailsToUse.length === 0) {
         setSelectedEmail(null);
+        return;
       }
+      
+      // Find current email index - if not found (was just completed), start from beginning
+      const currentIndex = emailsToUse.findIndex(e => e && e.id === selectedEmail.id);
+      
+      if (currentIndex >= 0 && currentIndex < emailsToUse.length - 1) {
+        // Found current email and there's a next one
+        const nextEmail = emailsToUse[currentIndex + 1];
+        if (nextEmail && nextEmail.id && nextEmail.subject && nextEmail.body) {
+          setSelectedEmail(nextEmail);
+          return;
+        }
+      } else if (currentIndex === -1 && emailsToUse.length > 0) {
+        // Current email not found (was completed), go to first available
+        const firstEmail = emailsToUse[0];
+        if (firstEmail && firstEmail.id && firstEmail.subject && firstEmail.body) {
+          setSelectedEmail(firstEmail);
+          return;
+        }
+      }
+      
+      // No more emails available, go back to dashboard
+      setSelectedEmail(null);
+    } else {
+      setSelectedEmail(null);
     }
   };
 
@@ -188,6 +234,10 @@ export default function SoloPage() {
       onTabChange={handleTabChange}
       dailyStats={dailyStats}
       isSoloGrinder={isSoloGrinder}
+      onFilteredEmailsChange={(emails) => {
+        setFilteredAvailableEmails(emails);
+      }}
+      onModuleChange={setCurrentModule}
     />
   );
 }

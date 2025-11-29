@@ -62,41 +62,31 @@ export function Leaderboard({ userWords, userName, userCompletedSubjects }: Lead
   return (
     <div className="h-full flex flex-col">
       {/* User's Position Card - Premium Design */}
-      <div className="mb-4 p-4 bg-white dark:bg-dark-50 rounded-xl border border-gray-200 dark:border-dark-200 shadow-sm">
+      <div className="mb-4 p-4 bg-gradient-to-br from-gray-50 to-white dark:from-dark-100 dark:to-dark-50 rounded-xl border border-gray-200 dark:border-dark-200 shadow-lg">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-lg ${getRankBadge(currentUserRank)} flex items-center justify-center text-sm font-bold shadow-sm`}>
+            <div className={`w-12 h-12 rounded-xl ${getRankBadge(currentUserRank)} flex items-center justify-center text-base font-bold shadow-md`}>
               #{currentUserRank}
             </div>
             <div>
               <div className="text-sm font-bold text-gray-900 dark:text-white">{userName}</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">Your Position</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Your Position</div>
             </div>
           </div>
           {getRankIcon(currentUserRank) && (
-            <span className="text-2xl">{getRankIcon(currentUserRank)}</span>
+            <span className="text-3xl">{getRankIcon(currentUserRank)}</span>
           )}
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-gray-100 dark:border-dark-200">
-          <div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Scenarios</div>
-            <div className="text-lg font-bold text-gray-900 dark:text-white">{userCompletedSubjects.length}</div>
-          </div>
-          <div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Words</div>
-            <div className="text-lg font-bold text-gray-900 dark:text-white">{userWords.toLocaleString()}</div>
-          </div>
         </div>
 
         {playerAbove && wordsToNext > 0 && (
-          <div className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-dark-100 rounded-lg">
-            <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-dark-200 flex items-center justify-center">
-              <span className="text-xs text-gray-600 dark:text-gray-400 font-bold">↑</span>
-            </div>
-            <div className="flex-1">
-              <div className="text-xs text-gray-600 dark:text-gray-400">
-                <span className="font-bold text-gray-900 dark:text-white">{wordsToNext.toLocaleString()}</span> words to reach #{currentUserRank - 1}
+          <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg p-3 border border-purple-200/50 dark:border-purple-800/30">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shadow-sm">
+                <span className="text-white text-sm font-bold">↑</span>
+              </div>
+              <div className="flex-1">
+                <div className="text-xs text-gray-600 dark:text-gray-400 mb-0.5">Words to reach #{currentUserRank - 1}</div>
+                <div className="text-lg font-bold text-gray-900 dark:text-white">{wordsToNext.toLocaleString()}</div>
               </div>
             </div>
           </div>

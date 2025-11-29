@@ -25,6 +25,7 @@ export const EmailFlow: React.FC<EmailFlowProps> = ({
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
   const [isClosing, setIsClosing] = useState(false);
   const [hasCompleted, setHasCompleted] = useState(false);
+  const [timeSpent, setTimeSpent] = useState<number>(0);
   
   const handleKeywordSelect = (keywords: string[]) => {
     setSelectedKeywords(keywords);
@@ -35,9 +36,10 @@ export const EmailFlow: React.FC<EmailFlowProps> = ({
     setStep('typing');
   };
   
-  const handleTypingComplete = () => {
+  const handleTypingComplete = (timeSpentSeconds?: number) => {
     setStep('complete');
     setHasCompleted(true);
+    setTimeSpent(timeSpentSeconds || 0);
     // Mark as complete immediately but don't close yet
     if (onMarkComplete) {
       onMarkComplete();
@@ -201,6 +203,14 @@ export const EmailFlow: React.FC<EmailFlowProps> = ({
                   <span className="text-gray-600 dark:text-gray-400">Words:</span>
                   <span className="font-semibold text-gray-900 dark:text-white">+{email.wordCount}</span>
                 </div>
+                {timeSpent > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 dark:text-gray-400">Time:</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">
+                      {timeSpent < 60 ? `${timeSpent}s` : `${Math.floor(timeSpent / 60)}m ${timeSpent % 60}s`}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600 dark:text-gray-400">Category:</span>
                   <span className="font-semibold text-gray-900 dark:text-white">{email.category}</span>
@@ -214,14 +224,8 @@ export const EmailFlow: React.FC<EmailFlowProps> = ({
 
             <div className="flex flex-col gap-3 pt-4">
               <button
-                onClick={handleContinueNext}
-                className="w-full px-6 py-3 bg-gray-900 dark:bg-white text-white dark:text-dark rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors text-sm sm:text-base"
-              >
-                Continue Next
-              </button>
-              <button
                 onClick={handleBackClick}
-                className="w-full px-6 py-3 border border-gray-300 dark:border-dark-200 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-dark-100 transition-colors text-sm sm:text-base"
+                className="w-full px-6 py-3 bg-gray-900 dark:bg-white text-white dark:text-dark rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors text-sm sm:text-base"
               >
                 Back to Scenarios
               </button>

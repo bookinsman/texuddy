@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 interface RetypingInterfaceMinimalProps {
   response: string;
-  onComplete: () => void;
+  onComplete: (timeSpent?: number) => void;
   onBack?: () => void;
   scenarioTitle?: string;
   category?: string;
@@ -212,7 +212,8 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
           setCurrentIndex(nextIndex);
           
           if (nextIndex >= response.length) {
-            setTimeout(() => onComplete(), 150);
+            const timeSpent = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
+            setTimeout(() => onComplete(timeSpent), 150);
           }
         }
         // No visual error feedback - just don't advance
@@ -244,7 +245,8 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
       }
       setCurrentIndex(nextIndex);
       if (nextIndex >= response.length) {
-        setTimeout(() => onComplete(), 150);
+        const timeSpent = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
+        setTimeout(() => onComplete(timeSpent), 150);
       }
     }
     e.target.value = '';

@@ -13,6 +13,8 @@ import { StudentGoalsTab } from './StudentGoalsTab';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import type { User, Email } from '@texuddy/types';
 
+const MODULES = ['Mixed', 'Careers', 'Philosophy', 'Psychology', 'Sales', 'Motivation', 'Quotes', 'Communications'] as const;
+
 interface StudentDashboardProps {
   user: User;
   emails: Email[];
@@ -26,6 +28,8 @@ interface StudentDashboardProps {
   onShowLeaderboard?: () => void;
   dailyStats: Array<{ date: string; helped: number; wordsRetyped: number }>;
   isSoloGrinder?: boolean;
+  onFilteredEmailsChange?: (filteredEmails: Email[]) => void;
+  onModuleChange?: (module: typeof MODULES[number]) => void;
 }
 
 export const StudentDashboard: React.FC<StudentDashboardProps> = ({
@@ -40,10 +44,20 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   onTabChange,
   dailyStats,
   isSoloGrinder = false,
-  onShowLeaderboard
+  onShowLeaderboard,
+  onFilteredEmailsChange,
+  onModuleChange: externalModuleChange
 }) => {
   const totalCompleted = completedEmails.length;
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedModule, setSelectedModule] = useState<typeof MODULES[number]>('Mixed');
+  
+  const handleModuleChange = (module: typeof MODULES[number]) => {
+    setSelectedModule(module);
+    if (externalModuleChange) {
+      externalModuleChange(module);
+    }
+  };
 
   // Calculate completed email subjects for current user
   const userCompletedSubjects = useMemo(() => {
@@ -181,7 +195,15 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 ) : activeTab === 'completed' ? (
                   <CompletedEmailsList emails={completedEmails} />
                 ) : activeTab === 'available' ? (
-                  <EmailList emails={emails} onSelectEmail={onSelectEmail} onSkipEmail={onSkipEmail} onShowStats={onShowStats} />
+                  <EmailList 
+                    emails={emails} 
+                    onSelectEmail={onSelectEmail} 
+                    onSkipEmail={onSkipEmail} 
+                    onShowStats={onShowStats}
+                    selectedModule={selectedModule}
+                    onModuleChange={handleModuleChange}
+                    onFilteredEmailsChange={onFilteredEmailsChange}
+                  />
                 ) : (
                   <SkippedEmailsList emails={skippedEmails} />
                 )}

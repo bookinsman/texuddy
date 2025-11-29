@@ -1,21 +1,45 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Card } from '@texuddy/ui';
 import type { Email } from '@texuddy/types';
+
+const MODULES = [
+  'Mixed',
+  'Careers',
+  'Philosophy',
+  'Psychology',
+  'Sales',
+  'Motivation',
+  'Quotes',
+  'Communications'
+] as const;
 
 interface EmailListProps {
   emails: Email[];
   onSelectEmail: (email: Email) => void;
   onShowStats: () => void;
   onSkipEmail?: (email: Email) => void;
+  selectedModule?: typeof MODULES[number];
+  onModuleChange?: (module: typeof MODULES[number]) => void;
+  onFilteredEmailsChange?: (filteredEmails: Email[]) => void;
 }
 
-export const EmailList: React.FC<EmailListProps> = ({ emails, onSelectEmail, onShowStats, onSkipEmail }) => {
+export const EmailList: React.FC<EmailListProps> = ({ emails, onSelectEmail, onShowStats, onSkipEmail, selectedModule: externalModule, onModuleChange, onFilteredEmailsChange }) => {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [skippingId, setSkippingId] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [internalModule, setInternalModule] = useState<typeof MODULES[number]>('Mixed');
+  const selectedModule = externalModule !== undefined ? externalModule : internalModule;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  
+  const handleModuleChange = (module: typeof MODULES[number]) => {
+    if (onModuleChange) {
+      onModuleChange(module);
+    } else {
+      setInternalModule(module);
+    }
+  };
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -76,13 +100,53 @@ export const EmailList: React.FC<EmailListProps> = ({ emails, onSelectEmail, onS
     }, 300);
   };
 
+  const filteredEmails = useMemo(() => {
+    if (selectedModule === 'Mixed') {
+      return emails;
+    }
+    
+    // Map categories to modules
+    const moduleCategoryMap: Record<string, string[]> = {
+      'Careers': ['Graphic Designer', 'Retail Sales', 'Food Service', 'Software Developer', 'Social Media Manager', 'Tutor / Educator', 'Photographer', 'Restaurant Server', 'Fitness Trainer', 'Real Estate', 'Veterinary Assistant', 'Auto Mechanic', 'Marketing', 'Hair Stylist', 'Event Planning', 'Customer Support', 'Corporate Intern', 'Receptionist', 'Freelance Writer', 'Video Editor', 'Babysitter', 'Pharmacy Technician', 'Job Interview', 'Retail Management', 'Dental Assistant', 'Delivery Driver', 'Music Teacher', 'Library Assistant', 'Phone Sales', 'Administrative Assistant', 'Careers'],
+      'Philosophy': ['Philosophy'],
+      'Psychology': ['Psychology'],
+      'Sales': ['Sales'],
+      'Motivation': ['Motivation'],
+      'Quotes': ['Quotes'],
+      'Communications': ['Communications']
+    };
+    
+    const categoriesInModule = moduleCategoryMap[selectedModule] || [];
+    return emails.filter(email => categoriesInModule.includes(email.category));
+  }, [emails, selectedModule]);
+
+  // Notify parent of filtered emails changes
+  useEffect(() => {
+    if (onFilteredEmailsChange) {
+      onFilteredEmailsChange(filteredEmails);
+    }
+  }, [filteredEmails, onFilteredEmailsChange]);
+
   return (
     <div className="space-y-2 w-full">
       <div className="flex items-center justify-between mb-3 sticky top-0 bg-gray-50 dark:bg-dark pb-2 z-10 transition-colors duration-500">
         <h2 className="text-base sm:text-lg font-bold text-gray-800 dark:text-white">Available Scenarios</h2>
-        <span className="text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-dark-100 px-2 py-1 rounded-full font-medium">
-          {emails.length} {emails.length === 1 ? 'scenario' : 'scenarios'}
-        </span>
+        <div className="flex items-center gap-2">
+          <select
+            value={selectedModule}
+            onChange={(e) => handleModuleChange(e.target.value as typeof MODULES[number])}
+            className="text-xs bg-white dark:bg-dark-50 border border-gray-200 dark:border-dark-200 rounded-lg px-2 py-1 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-purple-500 dark:focus:ring-purple-400 transition-colors"
+          >
+            {MODULES.map((module) => (
+              <option key={module} value={module}>
+                {module}
+              </option>
+            ))}
+          </select>
+          <span className="text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-dark-100 px-2 py-1 rounded-full font-medium">
+            {filteredEmails.length} {filteredEmails.length === 1 ? 'scenario' : 'scenarios'}
+          </span>
+        </div>
       </div>
       <div className="relative">
         <div 
@@ -97,7 +161,7 @@ export const EmailList: React.FC<EmailListProps> = ({ emails, onSelectEmail, onS
             </Card>
           ) : (
             <>
-              {emails.map((email) => (
+              {filteredEmails.map((email) => (
                 <EmailCard
                   key={email.id}
                   email={email}
