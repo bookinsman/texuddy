@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 interface RetypingInterfaceMinimalProps {
   response: string;
@@ -41,6 +41,8 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const activeCharRef = useRef<HTMLSpanElement>(null);
+  const isScrollingRef = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const wordCount = response.split(/\s+/).length;
 
   useEffect(() => {
@@ -98,93 +100,84 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
     inputRef.current?.focus();
   }, []);
 
-  // Smart scroll logic - keeps cursor in view, especially on mobile with keyboard
+  // Cleanup scroll timeout on unmount
   useEffect(() => {
-    if (!activeCharRef.current || !containerRef.current) return;
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Stable scroll function - prevents bouncing
+  const scrollToActiveChar = useCallback(() => {
+    if (!activeCharRef.current || !containerRef.current || isScrollingRef.current) return;
     
     const container = containerRef.current;
     const element = activeCharRef.current;
     
-    // Small delay to ensure DOM is updated
-    const scrollTimeout = setTimeout(() => {
+    // Clear any pending scroll
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+    
+    // Debounce scroll to prevent rapid firing
+    scrollTimeoutRef.current = setTimeout(() => {
+      if (!element || !container) return;
+      
+      isScrollingRef.current = true;
+      
       const containerRect = container.getBoundingClientRect();
       const elementRect = element.getBoundingClientRect();
       
       if (isMobile && keyboardHeight > 0) {
-        // Mobile with keyboard visible - prioritize keeping text above keyboard
+        // Mobile with keyboard - keep text above keyboard
         const viewport = window.visualViewport;
-        const viewportHeight = viewport?.height || window.innerHeight;
-        const viewportTop = viewport?.offsetTop || 0;
+        if (!viewport) {
+          isScrollingRef.current = false;
+          return;
+        }
         
-        // Calculate keyboard top position (where keyboard starts)
-        const keyboardTop = viewportTop + viewportHeight;
+        const keyboardTop = viewport.offsetTop + viewport.height;
         const elementBottom = elementRect.bottom;
-        const elementTop = elementRect.top;
-        
-        // Calculate line height (typically 1.5x font size for line-height: 1.5)
         const lineHeight = fontSize * 1.5;
-        const safeZone = lineHeight * 3; // Keep 3 lines above keyboard
+        const safeZone = lineHeight * 2.5; // 2.5 lines above keyboard
         
-        // Check if element is too close to or under keyboard
-        const distanceToKeyboard = keyboardTop - elementBottom;
-        const isTooClose = distanceToKeyboard < safeZone;
-        const isUnderKeyboard = elementTop > keyboardTop;
-        
-        if (isTooClose || isUnderKeyboard) {
-          // Scroll to keep element visible above keyboard
+        // Only scroll if element is too close to keyboard
+        if (elementBottom > keyboardTop - safeZone) {
           const elementTopRelative = elementRect.top - containerRect.top + container.scrollTop;
-          
-          // Target: position element in the middle-upper area of visible space above keyboard
           const visibleAreaTop = containerRect.top;
           const visibleAreaBottom = keyboardTop;
           const visibleAreaHeight = visibleAreaBottom - visibleAreaTop;
+          const targetPosition = visibleAreaTop + (visibleAreaHeight * 0.35); // 35% from top
+          const scrollOffset = elementRect.top - targetPosition;
           
-          // Position element at 30% from top of visible area (comfortable reading position)
-          const targetPosition = visibleAreaTop + (visibleAreaHeight * 0.30);
-          const currentElementTop = elementRect.top;
-          const scrollOffset = currentElementTop - targetPosition;
+          const newScrollTop = container.scrollTop + scrollOffset;
           
-          const newScrollTop = container.scrollTop - scrollOffset;
-          
-          container.scrollTo({
-            top: Math.max(0, newScrollTop),
-            behavior: 'smooth'
-          });
-        } else {
-          // Use scrollIntoView as fallback for better browser support
-          element.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-            inline: 'nearest'
-          });
+          // Use instant scroll to prevent bouncing
+          container.scrollTop = Math.max(0, newScrollTop);
         }
       } else {
-        // Desktop or mobile without keyboard - standard scroll behavior
+        // Desktop - simple scroll to keep element visible
         const containerHeight = containerRect.height;
-        const isNearEnd = currentIndex >= response.length * 0.85;
-        const relativeTop = elementRect.top - containerRect.top + container.scrollTop;
+        const elementTopRelative = elementRect.top - containerRect.top + container.scrollTop;
+        const targetPosition = containerHeight * 0.35; // 35% from top
+        const scrollOffset = elementTopRelative - targetPosition;
         
-        let targetScroll: number;
-        
-        if (isNearEnd) {
-          // Near end: keep element lower in viewport
-          targetScroll = relativeTop - (containerHeight * 0.40) + (elementRect.height / 2);
-          const maxScroll = container.scrollHeight - containerHeight;
-          targetScroll = Math.min(targetScroll, maxScroll);
-        } else {
-          // Normal: keep element in upper-middle area
-          targetScroll = relativeTop - (containerHeight * 0.30) + (elementRect.height / 2);
-        }
-        
-        container.scrollTo({
-          top: Math.max(0, targetScroll),
-          behavior: 'smooth'
-        });
+        container.scrollTop = Math.max(0, scrollOffset);
       }
-    }, 50); // Small delay to ensure DOM updates
-    
-    return () => clearTimeout(scrollTimeout);
-  }, [currentIndex, response.length, isMobile, keyboardHeight, fontSize]);
+      
+      // Reset scrolling flag after animation
+      setTimeout(() => {
+        isScrollingRef.current = false;
+      }, 100);
+    }, 30); // Small debounce
+  }, [isMobile, keyboardHeight, fontSize]);
+
+  // Trigger scroll when currentIndex changes
+  useEffect(() => {
+    scrollToActiveChar();
+  }, [currentIndex, scrollToActiveChar]);
 
   // Main typing logic with keyboard handling
   useEffect(() => {
@@ -222,33 +215,6 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
           }
           setCurrentIndex(nextIndex);
           
-          // Trigger immediate scroll on mobile after state update
-          if (isMobile && activeCharRef.current && containerRef.current) {
-            setTimeout(() => {
-              const element = activeCharRef.current;
-              const container = containerRef.current;
-              if (element && container) {
-                const elementRect = element.getBoundingClientRect();
-                const containerRect = container.getBoundingClientRect();
-                const viewport = window.visualViewport;
-                
-                if (viewport && keyboardHeight > 0) {
-                  const keyboardTop = viewport.offsetTop + viewport.height;
-                  const elementBottom = elementRect.bottom;
-                  const safeZone = fontSize * 1.5 * 3; // 3 lines
-                  
-                  if (elementBottom > keyboardTop - safeZone) {
-                    const scrollOffset = elementBottom - (keyboardTop - safeZone);
-                    container.scrollTop += scrollOffset;
-                  }
-                } else {
-                  // Fallback: use scrollIntoView
-                  element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-              }
-            }, 20);
-          }
-          
           if (nextIndex >= response.length) {
             const timeSpent = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
             setTimeout(() => onComplete(timeSpent), 150);
@@ -282,40 +248,6 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
         nextIndex++;
       }
       setCurrentIndex(nextIndex);
-      
-      // Force scroll update immediately after state change on mobile
-      if (isMobile && activeCharRef.current && containerRef.current) {
-        setTimeout(() => {
-          const element = activeCharRef.current;
-          const container = containerRef.current;
-          if (element && container) {
-            const elementRect = element.getBoundingClientRect();
-            const containerRect = container.getBoundingClientRect();
-            const viewport = window.visualViewport;
-            
-            if (viewport && keyboardHeight > 0) {
-              const keyboardTop = viewport.offsetTop + viewport.height;
-              const elementBottom = elementRect.bottom;
-              const safeZone = fontSize * 1.5 * 3; // 3 lines above keyboard
-              
-              // If element is too close to or under keyboard, scroll up
-              if (elementBottom > keyboardTop - safeZone) {
-                const scrollOffset = elementBottom - (keyboardTop - safeZone);
-                container.scrollTop += scrollOffset;
-              }
-            } else {
-              // Fallback: scroll element into view
-              const elementTopRelative = elementRect.top - containerRect.top + container.scrollTop;
-              const containerHeight = containerRect.height;
-              const targetScroll = elementTopRelative - (containerHeight * 0.3);
-              container.scrollTo({
-                top: Math.max(0, targetScroll),
-                behavior: 'smooth'
-              });
-            }
-          }
-        }, 20);
-      }
       
       if (nextIndex >= response.length) {
         const timeSpent = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
