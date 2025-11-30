@@ -41,14 +41,14 @@ export default function SoloGrinderAuth() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#1a1a1a] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#1a1a1a] flex items-center justify-center p-4 sm:p-6 lg:p-8" style={{ WebkitOverflowScrolling: 'touch' }}>
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03]" style={{
         backgroundImage: 'radial-gradient(circle at 1px 1px, gray 1px, transparent 0)',
         backgroundSize: '40px 40px'
       }}></div>
 
-      <div className="relative max-w-md w-full">
+      <div className="relative max-w-md lg:max-w-lg xl:max-w-xl w-full">
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3 mb-8 group">
@@ -71,7 +71,7 @@ export default function SoloGrinderAuth() {
         </div>
 
         {/* Form Card */}
-        <div className="bg-white dark:bg-[#2a2a2a] rounded-2xl border border-gray-200 dark:border-[#3a3a3a] p-8 shadow-xl">
+        <div className="bg-white dark:bg-[#2a2a2a] rounded-2xl border border-gray-200 dark:border-[#3a3a3a] p-6 sm:p-8 lg:p-10 shadow-xl">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name Input */}
             <div>

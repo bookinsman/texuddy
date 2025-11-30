@@ -75,9 +75,9 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   ];
 
   return (
-    <div className="h-screen bg-gray-50 dark:bg-dark flex flex-col overflow-hidden transition-colors duration-500">
+    <div className="h-screen bg-gray-50 dark:bg-dark flex flex-col overflow-hidden transition-colors duration-500" style={{ WebkitOverflowScrolling: 'touch' }}>
       <header className="bg-white/80 dark:bg-dark-50/80 border-b border-gray-200 dark:border-dark-100 flex-shrink-0 z-20 backdrop-blur-xl transition-colors duration-500">
-        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center gap-4">
               <button
@@ -116,7 +116,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden max-w-[1800px] mx-auto w-full relative">
+      <div className="flex flex-1 overflow-hidden max-w-[1800px] mx-auto w-full relative" style={{ WebkitOverflowScrolling: 'touch' }}>
         {sidebarOpen && (
           <div 
             className="fixed inset-0 bg-black/50 dark:bg-black/70 z-30 lg:hidden backdrop-blur-sm"
@@ -149,8 +149,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
         </div>
 
         <main className="flex-1 min-w-0 flex flex-col overflow-hidden bg-white/50 dark:bg-dark/50">
-          <div className="flex-1 overflow-hidden p-4 sm:p-6 lg:p-8">
-            <div className="h-full flex flex-col max-w-4xl mx-auto">
+          <div className="flex-1 overflow-hidden p-4 sm:p-6 lg:p-8 xl:p-10">
+            <div className="h-full flex flex-col max-w-4xl xl:max-w-5xl mx-auto w-full">
               <div className="mb-6 flex gap-1 border-b border-gray-200 dark:border-dark-100 overflow-x-auto no-scrollbar">
                 {tabs.map((tab) => (
                   <button
@@ -212,8 +212,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
           </div>
         </main>
 
-        <aside className="hidden lg:flex w-96 bg-white/80 dark:bg-dark-50/80 border-l border-gray-200 dark:border-dark-100 flex-col overflow-hidden backdrop-blur-xl">
-          <div className="flex-1 p-4 sm:p-6 overflow-hidden flex flex-col">
+        <aside className="hidden lg:flex w-80 xl:w-96 bg-white/80 dark:bg-dark-50/80 border-l border-gray-200 dark:border-dark-100 flex-col overflow-hidden backdrop-blur-xl">
+          <div className="flex-1 p-4 sm:p-6 xl:p-8 overflow-hidden flex flex-col">
             <Leaderboard 
               userWords={user.wordsRetyped || 0} 
               userName={user.studentName}

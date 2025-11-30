@@ -98,61 +98,68 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
     inputRef.current?.focus();
   }, []);
 
-  // Smart scroll logic - keeps cursor in view
-  // On mobile: when about 4 rows from keyboard, center the text
+  // Smart scroll logic - keeps cursor in view, especially on mobile with keyboard
   useEffect(() => {
-    if (activeCharRef.current && containerRef.current) {
-      const container = containerRef.current;
-      const element = activeCharRef.current;
-      
+    if (!activeCharRef.current || !containerRef.current) return;
+    
+    const container = containerRef.current;
+    const element = activeCharRef.current;
+    
+    // Small delay to ensure DOM is updated
+    const scrollTimeout = setTimeout(() => {
       const containerRect = container.getBoundingClientRect();
       const elementRect = element.getBoundingClientRect();
       
       if (isMobile && keyboardHeight > 0) {
-        // Mobile with keyboard visible - use visualViewport for accurate positioning
+        // Mobile with keyboard visible - prioritize keeping text above keyboard
         const viewport = window.visualViewport;
         const viewportHeight = viewport?.height || window.innerHeight;
         const viewportTop = viewport?.offsetTop || 0;
         
-        // Calculate keyboard top position
+        // Calculate keyboard top position (where keyboard starts)
         const keyboardTop = viewportTop + viewportHeight;
         const elementBottom = elementRect.bottom;
-        const distanceToKeyboard = keyboardTop - elementBottom;
+        const elementTop = elementRect.top;
         
-        // Calculate line height based on font size (line-height is typically 1.5x font size)
+        // Calculate line height (typically 1.5x font size for line-height: 1.5)
         const lineHeight = fontSize * 1.5;
-        const fourRowsHeight = lineHeight * 4;
+        const safeZone = lineHeight * 3; // Keep 3 lines above keyboard
         
-        // If we're within 4 rows of keyboard, center the text
-        if (distanceToKeyboard <= fourRowsHeight && distanceToKeyboard > -lineHeight) {
-          // Center the active character in the visible area above keyboard
+        // Check if element is too close to or under keyboard
+        const distanceToKeyboard = keyboardTop - elementBottom;
+        const isTooClose = distanceToKeyboard < safeZone;
+        const isUnderKeyboard = elementTop > keyboardTop;
+        
+        if (isTooClose || isUnderKeyboard) {
+          // Scroll to keep element visible above keyboard
+          const elementTopRelative = elementRect.top - containerRect.top + container.scrollTop;
+          
+          // Target: position element in the middle-upper area of visible space above keyboard
           const visibleAreaTop = containerRect.top;
           const visibleAreaBottom = keyboardTop;
           const visibleAreaHeight = visibleAreaBottom - visibleAreaTop;
-          const centerPosition = visibleAreaHeight / 2;
           
-          // Calculate scroll position to center the element
-          const elementTopRelative = elementRect.top - containerRect.top + container.scrollTop;
-          const targetScroll = elementTopRelative - centerPosition + (elementRect.height / 2);
+          // Position element at 30% from top of visible area (comfortable reading position)
+          const targetPosition = visibleAreaTop + (visibleAreaHeight * 0.30);
+          const currentElementTop = elementRect.top;
+          const scrollOffset = currentElementTop - targetPosition;
+          
+          const newScrollTop = container.scrollTop - scrollOffset;
           
           container.scrollTo({
-            top: Math.max(0, targetScroll),
+            top: Math.max(0, newScrollTop),
             behavior: 'smooth'
           });
-        } else if (distanceToKeyboard > fourRowsHeight) {
-          // Normal scrolling - keep cursor visible but not too close to keyboard
-          const relativeTop = elementRect.top - containerRect.top + container.scrollTop;
-          const visibleHeight = viewportHeight - containerRect.top;
-          const topOffset = visibleHeight * 0.25; // Keep it a bit higher on mobile
-          const targetScroll = relativeTop - topOffset + (elementRect.height / 2);
-          
-          container.scrollTo({
-            top: Math.max(0, targetScroll),
-            behavior: 'smooth'
+        } else {
+          // Use scrollIntoView as fallback for better browser support
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'nearest'
           });
         }
       } else {
-        // Desktop or mobile without keyboard
+        // Desktop or mobile without keyboard - standard scroll behavior
         const containerHeight = containerRect.height;
         const isNearEnd = currentIndex >= response.length * 0.85;
         const relativeTop = elementRect.top - containerRect.top + container.scrollTop;
@@ -160,10 +167,12 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
         let targetScroll: number;
         
         if (isNearEnd) {
+          // Near end: keep element lower in viewport
           targetScroll = relativeTop - (containerHeight * 0.40) + (elementRect.height / 2);
           const maxScroll = container.scrollHeight - containerHeight;
           targetScroll = Math.min(targetScroll, maxScroll);
         } else {
+          // Normal: keep element in upper-middle area
           targetScroll = relativeTop - (containerHeight * 0.30) + (elementRect.height / 2);
         }
         
@@ -172,7 +181,9 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
           behavior: 'smooth'
         });
       }
-    }
+    }, 50); // Small delay to ensure DOM updates
+    
+    return () => clearTimeout(scrollTimeout);
   }, [currentIndex, response.length, isMobile, keyboardHeight, fontSize]);
 
   // Main typing logic with keyboard handling
@@ -211,6 +222,33 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
           }
           setCurrentIndex(nextIndex);
           
+          // Trigger immediate scroll on mobile after state update
+          if (isMobile && activeCharRef.current && containerRef.current) {
+            setTimeout(() => {
+              const element = activeCharRef.current;
+              const container = containerRef.current;
+              if (element && container) {
+                const elementRect = element.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                const viewport = window.visualViewport;
+                
+                if (viewport && keyboardHeight > 0) {
+                  const keyboardTop = viewport.offsetTop + viewport.height;
+                  const elementBottom = elementRect.bottom;
+                  const safeZone = fontSize * 1.5 * 3; // 3 lines
+                  
+                  if (elementBottom > keyboardTop - safeZone) {
+                    const scrollOffset = elementBottom - (keyboardTop - safeZone);
+                    container.scrollTop += scrollOffset;
+                  }
+                } else {
+                  // Fallback: use scrollIntoView
+                  element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+              }
+            }, 20);
+          }
+          
           if (nextIndex >= response.length) {
             const timeSpent = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
             setTimeout(() => onComplete(timeSpent), 150);
@@ -244,6 +282,41 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
         nextIndex++;
       }
       setCurrentIndex(nextIndex);
+      
+      // Force scroll update immediately after state change on mobile
+      if (isMobile && activeCharRef.current && containerRef.current) {
+        setTimeout(() => {
+          const element = activeCharRef.current;
+          const container = containerRef.current;
+          if (element && container) {
+            const elementRect = element.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            const viewport = window.visualViewport;
+            
+            if (viewport && keyboardHeight > 0) {
+              const keyboardTop = viewport.offsetTop + viewport.height;
+              const elementBottom = elementRect.bottom;
+              const safeZone = fontSize * 1.5 * 3; // 3 lines above keyboard
+              
+              // If element is too close to or under keyboard, scroll up
+              if (elementBottom > keyboardTop - safeZone) {
+                const scrollOffset = elementBottom - (keyboardTop - safeZone);
+                container.scrollTop += scrollOffset;
+              }
+            } else {
+              // Fallback: scroll element into view
+              const elementTopRelative = elementRect.top - containerRect.top + container.scrollTop;
+              const containerHeight = containerRect.height;
+              const targetScroll = elementTopRelative - (containerHeight * 0.3);
+              container.scrollTo({
+                top: Math.max(0, targetScroll),
+                behavior: 'smooth'
+              });
+            }
+          }
+        }, 20);
+      }
+      
       if (nextIndex >= response.length) {
         const timeSpent = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
         setTimeout(() => onComplete(timeSpent), 150);
@@ -371,6 +444,12 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
           className="flex-1 overflow-y-auto cursor-text relative scroll-smooth"
           onClick={focusInput}
           ref={containerRef}
+          style={{
+            // Ensure smooth scrolling on iOS
+            WebkitOverflowScrolling: 'touch',
+            // Prevent iOS bounce scrolling that can interfere
+            overscrollBehavior: 'contain'
+          }}
         >
           {/* Top/Bottom Fade Masks - positioned below header */}
           <div className="fixed top-[73px] sm:top-[81px] left-0 right-0 h-24 bg-gradient-to-b from-white dark:from-dark via-white/90 dark:via-dark/90 to-transparent z-10 pointer-events-none transition-colors"></div>
@@ -381,9 +460,9 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
               className="max-w-3xl w-full px-4 sm:px-6 md:px-16 pt-12 sm:pt-16 md:pt-24 relative z-20"
               style={{ 
                 paddingBottom: isMobile && keyboardHeight > 0 
-                  ? `${Math.max(keyboardHeight + 40, 120)}px` 
+                  ? `${Math.max(keyboardHeight + 60, 150)}px` 
                   : isMobile
-                  ? '80px'
+                  ? '100px'
                   : undefined 
               }}
             >

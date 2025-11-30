@@ -163,7 +163,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white selection:bg-purple-500 selection:text-white overflow-x-hidden font-sans transition-colors duration-500">
+    <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white selection:bg-purple-500 selection:text-white overflow-x-hidden font-sans transition-colors duration-500" style={{ WebkitOverflowScrolling: 'touch' }}>
       {/* Dynamic Background - Light vs Dark Split */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         {/* LIGHT MODE: Solid & Clean */}
@@ -194,7 +194,7 @@ export default function LandingPage() {
             ? 'bg-white/95 dark:bg-black/95 backdrop-blur-xl border-b border-gray-200/50 dark:border-white/10 shadow-sm'
             : 'bg-transparent'
         }`}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
             <div className="flex items-center justify-between h-16 md:h-20">
               {/* Logo - Minimalist */}
               <Link href="/" className="flex items-center gap-3 group">
@@ -208,7 +208,7 @@ export default function LandingPage() {
               </Link>
 
               {/* Navigation Links - Clean */}
-              <div className="hidden md:flex items-center gap-8">
+              <div className="hidden md:flex items-center gap-6 lg:gap-8">
                 {['Features', 'How it Works', 'Pricing'].map((item) => (
                   <a
                     key={item}
@@ -237,23 +237,23 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative z-10 min-h-screen flex flex-col justify-center pt-12 md:pt-20">
-        <div className="max-w-7xl mx-auto px-6 w-full">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <section className="relative z-10 min-h-screen flex flex-col justify-center pt-12 md:pt-20 pb-12 md:pb-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 w-full">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 xl:gap-20 items-center">
             <div className="reveal-on-scroll opacity-0 translate-y-10 transition-all duration-1000 ease-out">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-50 border border-purple-100 text-xs font-medium text-purple-600 mb-8 backdrop-blur-sm dark:bg-white/5 dark:border-white/10 dark:text-purple-300 shadow-sm dark:shadow-none">
                 <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
                 Practice Makes Permanent
               </div>
 
-              <h1 className="text-6xl lg:text-8xl font-bold tracking-tight mb-8 leading-[1.1] text-gray-900 dark:text-white">
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight mb-6 md:mb-8 leading-[1.1] text-gray-900 dark:text-white">
                 Stop Sounding <br/>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 dark:from-purple-400 dark:via-blue-400 dark:to-purple-400 animate-gradient-x">
                   Like a Kid
                 </span>
               </h1>
 
-              <p className="text-xl text-gray-600 dark:text-gray-400 mb-10 leading-relaxed max-w-xl">
+              <p className="text-lg sm:text-xl lg:text-xl xl:text-xl text-gray-600 dark:text-gray-400 mb-8 md:mb-10 leading-relaxed max-w-xl">
                 Practice real arguments, real negotiations, real confidence-builders. Type them once, own them forever. While your friends fumble for words, you&apos;ll already know what to say.
               </p>
 
@@ -281,8 +281,8 @@ export default function LandingPage() {
                             </div>
 
             {/* Hero Visual - 3D-like Card Stack */}
-            <div className="relative h-[600px] hidden lg:block reveal-on-scroll opacity-0 translate-x-10 transition-all duration-1000 delay-300 ease-out">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[500px]">
+            <div className="relative h-[500px] md:h-[600px] lg:h-[600px] xl:h-[650px] hidden lg:block reveal-on-scroll opacity-0 translate-x-10 transition-all duration-1000 delay-300 ease-out">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[400px] xl:max-w-[450px] h-[450px] md:h-[500px] xl:h-[550px] px-4">
                 {/* Background Cards for Depth */}
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/40 dark:to-blue-900/40 rounded-3xl transform rotate-[-6deg] translate-x-[-20px] scale-95 blur-sm border border-gray-100 dark:border-white/5"></div>
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-800/40 dark:to-blue-800/40 rounded-3xl transform rotate-[-3deg] translate-x-[-10px] scale-95 backdrop-blur-sm border border-gray-200 dark:border-white/10"></div>
@@ -343,7 +343,7 @@ export default function LandingPage() {
 
       {/* Live Leaderboard Section - PREMIUM DESIGN */}
       <section className="relative py-20 md:py-32 bg-white dark:bg-black overflow-hidden">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
           {/* Header */}
           <div className="text-center mb-12 md:mb-16 reveal-on-scroll opacity-0 translate-y-10 transition-all duration-1000">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-gray-900 dark:text-white leading-tight tracking-tight">
@@ -367,7 +367,7 @@ export default function LandingPage() {
             <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-xl">
               {/* Table Header */}
               <div className="px-4 md:px-6 py-2 md:py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#0f0f0f] overflow-x-auto">
-                <div className="min-w-[700px] md:min-w-0 grid grid-cols-5 gap-3 md:gap-6 items-center">
+                <div className="min-w-[700px] md:min-w-0 xl:min-w-0 grid grid-cols-5 gap-3 md:gap-6 items-center">
                   <div className="text-[10px] md:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">POS</div>
                   <div className="text-[10px] md:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">OPERATIVE</div>
                   <div className="text-right text-[10px] md:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">FLOW</div>
@@ -387,7 +387,7 @@ export default function LandingPage() {
                 ].map((player) => (
                   <div
                     key={player.rank}
-                    className="px-4 md:px-6 py-3 md:py-4 hover:bg-gray-50 dark:hover:bg-[#252525] transition-colors min-w-[700px] md:min-w-0"
+                    className="px-4 md:px-6 py-3 md:py-4 hover:bg-gray-50 dark:hover:bg-[#252525] transition-colors min-w-[700px] md:min-w-0 xl:min-w-0"
                   >
                     <div className="grid grid-cols-5 gap-3 md:gap-6 items-center">
                       {/* Position */}
@@ -469,9 +469,9 @@ export default function LandingPage() {
           <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-6">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
           <div className="reveal-on-scroll opacity-0 translate-y-10 transition-all duration-1000 text-center mb-16 md:mb-20">
-            <h2 className="text-5xl md:text-7xl font-black mb-4 text-gray-900 dark:text-white leading-tight">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-4 text-gray-900 dark:text-white leading-tight">
               The <span className="relative inline-block">
                 <span className="text-red-500">Gap</span>
                 <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
@@ -554,8 +554,8 @@ export default function LandingPage() {
             <div className="absolute inset-0 bg-gradient-to-b from-gray-900 via-purple-900/20 to-gray-900 dark:from-black dark:via-purple-900/20 dark:to-black"></div>
         </div>
         
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-20 items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 xl:gap-20 items-center">
             <div className="reveal-on-scroll opacity-0 translate-y-10 transition-all duration-1000 order-2 lg:order-1">
               {/* Comparison Card */}
               <div className="relative group">
@@ -631,7 +631,7 @@ export default function LandingPage() {
           <div className="absolute bottom-1/2 right-0 w-72 h-72 bg-blue-200/15 dark:bg-blue-500/8 rounded-full blur-3xl animate-float-slow-delayed"></div>
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-6 mb-12 text-center reveal-on-scroll opacity-0 translate-y-10 transition-all duration-1000">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 mb-12 text-center reveal-on-scroll opacity-0 translate-y-10 transition-all duration-1000">
           <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3">Real scenarios, real results</h3>
           <p className="text-sm font-mono text-gray-500 dark:text-gray-400 uppercase tracking-widest">40 Professions • 800+ Scenarios</p>
         </div>
@@ -685,8 +685,8 @@ export default function LandingPage() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-64 bg-gradient-to-b from-transparent via-purple-300/20 to-transparent dark:via-purple-500/10"></div>
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-12 mb-16 reveal-on-scroll opacity-0 translate-y-10 transition-all duration-1000">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
+          <div className="grid md:grid-cols-4 gap-8 lg:gap-12 mb-16 reveal-on-scroll opacity-0 translate-y-10 transition-all duration-1000">
             {/* Brand */}
             <div className="md:col-span-2">
               <div className="flex items-center gap-3 mb-6">
