@@ -58,7 +58,7 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
 
   useEffect(() => {
     if (!isMobile) return;
-    
+
     const handleResize = () => {
       // Use visualViewport API for modern browsers (iOS Safari, Chrome Android)
       if (window.visualViewport) {
@@ -112,24 +112,24 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
   // Stable scroll function - prevents bouncing
   const scrollToActiveChar = useCallback(() => {
     if (!activeCharRef.current || !containerRef.current || isScrollingRef.current) return;
-    
+
     const container = containerRef.current;
     const element = activeCharRef.current;
-    
+
     // Clear any pending scroll
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
-    
+
     // Debounce scroll to prevent rapid firing
     scrollTimeoutRef.current = setTimeout(() => {
       if (!element || !container) return;
-      
+
       isScrollingRef.current = true;
-      
+
       const containerRect = container.getBoundingClientRect();
       const elementRect = element.getBoundingClientRect();
-      
+
       if (isMobile && keyboardHeight > 0) {
         // Mobile with keyboard - keep text above keyboard
         const viewport = window.visualViewport;
@@ -137,12 +137,12 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
           isScrollingRef.current = false;
           return;
         }
-        
+
         const keyboardTop = viewport.offsetTop + viewport.height;
         const elementBottom = elementRect.bottom;
         const lineHeight = fontSize * 1.5;
         const safeZone = lineHeight * 2.5; // 2.5 lines above keyboard
-        
+
         // Only scroll if element is too close to keyboard
         if (elementBottom > keyboardTop - safeZone) {
           const elementTopRelative = elementRect.top - containerRect.top + container.scrollTop;
@@ -151,9 +151,9 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
           const visibleAreaHeight = visibleAreaBottom - visibleAreaTop;
           const targetPosition = visibleAreaTop + (visibleAreaHeight * 0.35); // 35% from top
           const scrollOffset = elementRect.top - targetPosition;
-          
+
           const newScrollTop = container.scrollTop + scrollOffset;
-          
+
           // Use instant scroll to prevent bouncing
           container.scrollTop = Math.max(0, newScrollTop);
         }
@@ -163,10 +163,10 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
         const elementTopRelative = elementRect.top - containerRect.top + container.scrollTop;
         const targetPosition = containerHeight * 0.35; // 35% from top
         const scrollOffset = elementTopRelative - targetPosition;
-        
+
         container.scrollTop = Math.max(0, scrollOffset);
       }
-      
+
       // Reset scrolling flag after animation
       setTimeout(() => {
         isScrollingRef.current = false;
@@ -184,9 +184,9 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
       if (e.ctrlKey || e.metaKey || e.altKey) return;
-      
+
       if (!startTime) setStartTime(Date.now());
-      
+
       if (e.key === 'Backspace') {
         if (currentIndex > 0) {
           let prev = currentIndex - 1;
@@ -198,15 +198,15 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
         }
         return;
       }
-      
+
       if (e.key.length === 1) {
         if (currentIndex >= response.length) return;
-        
+
         const targetChar = response[currentIndex];
         if (!targetChar) return;
-        
+
         const isMatch = e.key.toLowerCase() === targetChar.toLowerCase();
-        
+
         if (isMatch) {
           let nextIndex = currentIndex + 1;
           // Skip forward over special characters
@@ -214,7 +214,7 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
             nextIndex++;
           }
           setCurrentIndex(nextIndex);
-          
+
           if (nextIndex >= response.length) {
             const timeSpent = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
             setTimeout(() => onComplete(timeSpent), 150);
@@ -223,7 +223,7 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
         // No visual error feedback - just don't advance
       }
     };
-    
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentIndex, response, onComplete, startTime]);
@@ -233,22 +233,22 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
     if (!startTime) setStartTime(Date.now());
     const val = e.target.value;
     if (!val) return;
-    
+
     if (currentIndex >= response.length) {
       e.target.value = '';
       return;
     }
-    
+
     const inputChar = val.slice(-1);
     const targetChar = response[currentIndex];
-    
+
     if (targetChar && inputChar.toLowerCase() === targetChar.toLowerCase()) {
       let nextIndex = currentIndex + 1;
       while (nextIndex < response.length && isSkippedChar(response[nextIndex])) {
         nextIndex++;
       }
       setCurrentIndex(nextIndex);
-      
+
       if (nextIndex >= response.length) {
         const timeSpent = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
         setTimeout(() => onComplete(timeSpent), 150);
@@ -266,14 +266,14 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
     const isActive = index === currentIndex;
     const isCompleted = index < currentIndex;
     const isFuture = index > currentIndex;
-    
+
     // Progressive opacity/blur logic for future text
     let opacityClass = 'opacity-100';
     let blurClass = 'blur-0';
-    
+
     if (isFuture) {
       const distance = index - currentIndex;
-      
+
       if (distance > 150) {
         opacityClass = 'opacity-0 duration-1000';
       } else if (distance > 80) {
@@ -291,7 +291,7 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
 
     // Regular characters - no drop cap
     return (
-      <span 
+      <span
         key={index}
         ref={isActive ? activeCharRef : null}
         className={`relative transition-all ease-out duration-500 ${opacityClass} ${blurClass}`}
@@ -325,10 +325,10 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
                   onClick={onBack}
                   className="text-base font-bold text-black dark:text-white hover:text-gray-700 dark:hover:text-gray-300 transition-colors flex items-center gap-2 flex-shrink-0 group"
                 >
-                  <svg 
-                    className="w-5 h-5 transition-transform group-hover:-translate-x-1" 
-                    fill="none" 
-                    stroke="currentColor" 
+                  <svg
+                    className="w-5 h-5 transition-transform group-hover:-translate-x-1"
+                    fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
@@ -372,7 +372,7 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
         </div>
 
         {/* Text Area - The Flow State */}
-        <div 
+        <div
           className="flex-1 overflow-y-auto cursor-text relative scroll-smooth"
           onClick={focusInput}
           ref={containerRef}
@@ -386,16 +386,16 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
           {/* Top/Bottom Fade Masks - positioned below header */}
           <div className="fixed top-[73px] sm:top-[81px] left-0 right-0 h-24 bg-gradient-to-b from-white dark:from-dark via-white/90 dark:via-dark/90 to-transparent z-10 pointer-events-none transition-colors"></div>
           <div className="fixed bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-dark via-white/90 dark:via-dark/90 to-transparent z-10 pointer-events-none transition-colors"></div>
-          
+
           <div className="min-h-full flex flex-col items-center">
-            <div 
+            <div
               className="max-w-3xl w-full px-4 sm:px-6 md:px-16 pt-12 sm:pt-16 md:pt-24 relative z-20"
-              style={{ 
-                paddingBottom: isMobile && keyboardHeight > 0 
-                  ? `${Math.max(keyboardHeight + 60, 150)}px` 
+              style={{
+                paddingBottom: isMobile && keyboardHeight > 0
+                  ? `${Math.max(keyboardHeight + 60, 150)}px`
                   : isMobile
-                  ? '100px'
-                  : undefined 
+                    ? '100px'
+                    : undefined
               }}
             >
               {/* Scenario metadata - compact header */}
@@ -423,7 +423,7 @@ export const RetypingInterfaceMinimal: React.FC<RetypingInterfaceMinimalProps> =
         </div>
 
         {/* Mobile Input */}
-        <input 
+        <input
           ref={inputRef}
           type="text"
           className="opacity-0 absolute -z-10"

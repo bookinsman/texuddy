@@ -26,16 +26,16 @@ export const EmailFlow: React.FC<EmailFlowProps> = ({
   const [isClosing, setIsClosing] = useState(false);
   const [hasCompleted, setHasCompleted] = useState(false);
   const [timeSpent, setTimeSpent] = useState<number>(0);
-  
+
   const handleKeywordSelect = (keywords: string[]) => {
     setSelectedKeywords(keywords);
     setStep('building');
   };
-  
+
   const handleBuildingComplete = () => {
     setStep('typing');
   };
-  
+
   const handleTypingComplete = (timeSpentSeconds?: number) => {
     setStep('complete');
     setHasCompleted(true);
@@ -49,15 +49,15 @@ export const EmailFlow: React.FC<EmailFlowProps> = ({
       onComplete(email.rewardCode);
     }, 100);
   };
-  
+
   const handleBackClick = () => {
     setIsClosing(true);
     setTimeout(() => {
       onBack();
     }, 300);
   };
-  
-  
+
+
   if (step === 'problem') {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-dark py-2 sm:py-4 md:py-8 px-3 sm:px-4 transition-colors duration-500">
@@ -127,7 +127,7 @@ export const EmailFlow: React.FC<EmailFlowProps> = ({
       </div>
     );
   }
-  
+
   if (step === 'keywords') {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-dark py-4 sm:py-8 px-4 transition-colors duration-500">
@@ -148,7 +148,7 @@ export const EmailFlow: React.FC<EmailFlowProps> = ({
       </div>
     );
   }
-  
+
   if (step === 'building') {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-dark py-4 sm:py-8 px-4 transition-colors duration-500">
@@ -163,7 +163,7 @@ export const EmailFlow: React.FC<EmailFlowProps> = ({
       </div>
     );
   }
-  
+
   if (step === 'typing') {
     return (
       <RetypingInterfaceMinimal
@@ -176,7 +176,7 @@ export const EmailFlow: React.FC<EmailFlowProps> = ({
       />
     );
   }
-  
+
   const handleContinueNext = () => {
     setIsClosing(true);
     setTimeout(() => {
@@ -196,7 +196,7 @@ export const EmailFlow: React.FC<EmailFlowProps> = ({
             <div className="flex justify-center">
               <div className="text-4xl sm:text-5xl">✅</div>
             </div>
-            
+
             <div className="space-y-3 sm:space-y-4">
               <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 space-y-2 sm:space-y-2.5">
                 <div className="flex justify-between items-center">
